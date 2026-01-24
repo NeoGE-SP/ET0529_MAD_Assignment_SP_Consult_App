@@ -50,8 +50,8 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyA86DOkb2lfx2sHJs80LF4Alc5QuLr83y4',
-    appId: '1:482492279272:web:73ad101d203015e22f5c5d',
+    apiKey: '',
+    appId: '',
     messagingSenderId: '482492279272',
     projectId: 'mad-assignment-b5e70',
     authDomain: 'mad-assignment-b5e70.firebaseapp.com',
@@ -59,8 +59,8 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDdQaFW-TZ17kFTCTYSqHcaJUK-XMABZm4',
-    appId: '1:482492279272:android:86746601123500a62f5c5d',
+    apiKey: '',
+    appId: '',
     messagingSenderId: '482492279272',
     projectId: 'mad-assignment-b5e70',
     storageBucket: 'mad-assignment-b5e70.firebasestorage.app',
