@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "482492279272",
+    "project_id": "mad-assignment-b5e70",
+    "storage_bucket": "mad-assignment-b5e70.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:482492279272:android:86746601123500a62f5c5d",
+        "android_client_info": {
+          "package_name": "com.example.mad_assignment_sp_consult_booking"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": ""
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
