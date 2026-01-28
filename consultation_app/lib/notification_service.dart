@@ -4,6 +4,8 @@ import 'dart:developer';
 
 class NotificationService {
     FirebaseMessaging messaging = FirebaseMessaging.instance;
+    String? token;
+    String? userId;
 
     void requestNotificationPermission() async {
         NotificationSettings settings = await messaging.requestPermission(
@@ -23,7 +25,7 @@ class NotificationService {
     }
 
     Future<String> getFcmToken() async {
-        String? token = await messaging.getToken();
+        token = await messaging.getToken();
         log("Token: $token");
         return token!;
     }

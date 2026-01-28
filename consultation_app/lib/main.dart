@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:mad_assignment_sp_consult_booking/home.dart';
 import 'firebase_options.dart';
 import 'package:mad_assignment_sp_consult_booking/login.dart';
 
@@ -36,8 +37,13 @@ void main() async {
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  runApp(const MaterialApp(
-    home: Login(),
+  runApp(MaterialApp(
+    initialRoute: '/', 
+    routes: {
+      '/': (context) => Login(),
+      '/home': (context) => Home(),
+    },
+    
   ));
 }
 

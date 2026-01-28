@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mad_assignment_sp_consult_booking/notification_service.dart';
 
 
 class Login extends StatefulWidget {
@@ -35,7 +36,6 @@ class _LoginState extends State<Login> {
 
     try {
       String role = selectedValue.toString();
-      print(username + password + role);
       final query = await FirebaseFirestore.instance
           .collection(role)
           .where('adm', isEqualTo: username)
@@ -47,12 +47,14 @@ class _LoginState extends State<Login> {
       }
 
       final email = query.docs.first['email'];
-      print(email);
 
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
+
+      NotificationService notificationService = NotificationService();
+      String fcmToken = await notificationService.getFcmToken();
 
       if (!mounted) return;
 
@@ -63,6 +65,16 @@ class _LoginState extends State<Login> {
           duration: Duration(seconds: 2),
         ),
       );
+
+      final userData = query.docs.first.data();
+      String userID = query.docs.first.id;
+      Navigator.pushReplacementNamed(context, '/home', arguments: {
+    'role': selectedValue,
+    'userData': userData,
+    'token': fcmToken,
+    'userID': userID,
+  },);
+
     } catch(e) {
       if (!mounted) return;
       
@@ -75,6 +87,14 @@ class _LoginState extends State<Login> {
       );
     }
   }
+
+  @override
+  void initState() {
+    NotificationService notificationService = NotificationService();
+    notificationService.requestNotificationPermission();
+    notificationService.getFcmToken();
+    super.initState();
+  } 
 
   @override
   Widget build(BuildContext context) {
