@@ -1,7 +1,8 @@
-import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
+
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -19,6 +20,8 @@ class _LoginState extends State<Login> {
     String username = _loginUsername.text.trim();
     String password = _loginPassword.text.trim();
 
+    final messenger = ScaffoldMessenger.of(context);
+
     if (username.isEmpty || password.isEmpty || selectedValue == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -30,54 +33,44 @@ class _LoginState extends State<Login> {
       return;
     }
 
-    final url = Uri.parse('http://10.0.2.2:3000/login');
-    Map<String, dynamic> body = {
-      'username': username,
-      'password': password,
-      'role': selectedValue,
-    };
-
     try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode(body),
+      String role = selectedValue.toString();
+      print(username + password + role);
+      final query = await FirebaseFirestore.instance
+          .collection(role)
+          .where('adm', isEqualTo: username)
+          .limit(1)
+          .get();
+
+      if (query.docs.isEmpty) {
+        throw Exception("User not found");
+      }
+
+      final email = query.docs.first['email'];
+      print(email);
+
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
       );
 
-      if (!mounted) return; 
-
-      try {
-        final resBody = jsonDecode(response.body);
-        String message = resBody['message'] ?? 'Unknown error';
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: response.statusCode == 200 ? Colors.green : Colors.red,
-            duration: Duration(seconds: 2),
-          ),
-        );
-
-        // Optional: Navigate to another page on success
-        // if (response.statusCode == 200) {
-        //   Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomePage()));
-        // }
-
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Unexpected server response:\n${response.body}'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 3),
-          ),
-        );
-      }
-    } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
+
+      messenger.showSnackBar(
         SnackBar(
-          content: Text('Error connecting to server'),
-          backgroundColor: Colors.red,
+          content: Text('Signed in successfully'),
+          backgroundColor: Colors.green,
           duration: Duration(seconds: 2),
+        ),
+      );
+    } catch(e) {
+      if (!mounted) return;
+      
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text("Username, Password or Role is incorrect"),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
         ),
       );
     }
