@@ -15,9 +15,9 @@ void main() async {
 
 
   runApp(const MaterialApp(
-    //home: BottomNav(),
+    home: BottomNav(),
     //home: Newconsult1()
-    home:Newconsult2()
+    //home:Newconsult2()
 
     // routes: {
     //   "/newpage": (context) => const NewPage(),
