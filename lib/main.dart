@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mad_assignment_sp_consult_booking/login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'bottomNav.dart';
 
 void main() async {
 
@@ -13,7 +14,7 @@ void main() async {
 
 
   runApp(const MaterialApp(
-    home: Login(),
+    home: BottomNav(),
 
     // routes: {
     //   "/newpage": (context) => const NewPage(),
