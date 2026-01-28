@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:mad_assignment_sp_consult_booking/login.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:mad_assignment_sp_consult_booking/newConsult1.dart';
+import 'package:mad_assignment_sp_consult_booking/newConsult2.dart';
 import 'firebase_options.dart';
 import 'bottomNav.dart';
 
@@ -14,7 +15,9 @@ void main() async {
 
 
   runApp(const MaterialApp(
-    home: BottomNav(),
+    //home: BottomNav(),
+    //home: Newconsult1()
+    home:Newconsult2()
 
     // routes: {
     //   "/newpage": (context) => const NewPage(),
