@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:mad_assignment_sp_consult_booking/home.dart';
+import 'package:mad_assignment_sp_consult_booking/homepage.dart';
 import 'firebase_options.dart';
 import 'package:mad_assignment_sp_consult_booking/login.dart';
 
@@ -41,7 +41,7 @@ void main() async {
     initialRoute: '/', 
     routes: {
       '/': (context) => Login(),
-      '/home': (context) => Home(),
+      '/home': (context) => HomePage(),
     },
     
   ));
