@@ -65,15 +65,18 @@ class _LoginState extends State<Login> {
           duration: Duration(seconds: 2),
         ),
       );
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        final userDocRef = FirebaseFirestore.instance
+          .collection('students') // or 'lecturers', or dynamically based on role
+          .doc(user.uid);
 
-      final userData = query.docs.first.data();
-      String userID = query.docs.first.id;
-      Navigator.pushReplacementNamed(context, '/home', arguments: {
-    'role': selectedValue,
-    'userData': userData,
-    'token': fcmToken,
-    'userID': userID,
-  },);
+        await userDocRef.set({
+          'fcmTokens': FieldValue.arrayUnion([fcmToken]),
+        }, SetOptions(merge: true));
+
+        print('FCM token added to user document successfully!');
+      }
 
     } catch(e) {
       if (!mounted) return;
@@ -90,11 +93,22 @@ class _LoginState extends State<Login> {
 
   @override
   void initState() {
-    NotificationService notificationService = NotificationService();
-    notificationService.requestNotificationPermission();
-    notificationService.getFcmToken();
-    super.initState();
-  } 
+  super.initState();
+
+  NotificationService notificationService = NotificationService();
+  notificationService.requestNotificationPermission();
+  notificationService.getFcmToken();
+
+  FirebaseAuth.instance.authStateChanges().listen((user) {
+    if (user != null) {
+      // Safe navigation
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        Navigator.pushReplacementNamed(context, '/homepage');
+      });
+    }
+  });
+}
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +118,7 @@ class _LoginState extends State<Login> {
           child: Column(
             children: [
               SizedBox(height: 80),
-              Image.asset("assets/images/SP.png", height: 100),
+              Image.asset("assets/img/sp_logo.png", height: 100),
               SizedBox(height: 80),
               Text("Username", style: TextStyle(fontSize: 20)),
               Padding(
