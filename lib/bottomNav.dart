@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mad_assignment_sp_consult_booking/data.dart';
 import 'package:mad_assignment_sp_consult_booking/historyPage.dart';
 import 'package:mad_assignment_sp_consult_booking/homepage.dart';
 import 'package:mad_assignment_sp_consult_booking/profile.dart';
@@ -40,6 +41,10 @@ class _BottomNavState extends State<BottomNav> {
         onTap: (value) {
           setState(() {
             currentpage = value;
+            studentProfile_Service.getAllStudents();
+            consultService.getAllConsults();
+            print(consultService.completed);
+            print(studentProfile_Service.z);
           });
         },
         items: const [

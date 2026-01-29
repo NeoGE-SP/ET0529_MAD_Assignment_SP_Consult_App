@@ -16,8 +16,8 @@ void main() async {
 
 
   runApp(MaterialApp(
-    //home: const BottomNav(),
-    home: Newconsult1(),
+    home: BottomNav(),
+    //home: Newconsult1(),
     //home:Newconsult2(),
 
       routes: {
