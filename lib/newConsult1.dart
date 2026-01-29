@@ -10,6 +10,7 @@ class Newconsult1 extends StatefulWidget {
 class _Newconsult1State extends State<Newconsult1> {
   String? _selectedModule;
   String? _selectedMode;
+  String? _selectedLecturer;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +35,7 @@ class _Newconsult1State extends State<Newconsult1> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: IconButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
+                  onPressed: () => Navigator.pushNamed(context, '/HomePage'),
                   icon: const Icon(Icons.close, size: 28),
                   splashRadius: 20,
                 ),
@@ -125,7 +126,12 @@ class _Newconsult1State extends State<Newconsult1> {
                   DropdownMenuItem(value: 'lect2', child: Text('Mr Lim')),
                   DropdownMenuItem(value: 'lect3', child: Text('Ms Tan')),
                 ],
-                onChanged: (_) {},
+                initialValue: _selectedLecturer,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedLecturer = value;
+                  });
+                },
               ),
               const SizedBox(height: 24),
               const Text(
@@ -194,7 +200,20 @@ class _Newconsult1State extends State<Newconsult1> {
                   width: 220,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      if (_selectedModule == null ||
+                          _selectedMode == null ||
+                          _selectedLecturer == null) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content:
+                                Text('Please fill in all required options.'),
+                          ),
+                        );
+                        return;
+                      }
+                      Navigator.pushNamed(context, '/newConsult2');
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE0443E),
                       shape: RoundedRectangleBorder(
