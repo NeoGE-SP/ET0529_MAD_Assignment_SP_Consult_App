@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'package:mad_assignment_sp_consult_booking/login.dart';
 import 'package:flutter/material.dart';
-import 'package:mad_assignment_sp_consult_booking/notification_service.dart';
 import 'package:http/http.dart' as http;
 
 class Home extends StatefulWidget {
@@ -45,7 +43,6 @@ class _HomeState extends State<Home> {
     Map<String, dynamic> userData = args['userData'];
     final token = args['token'];
     final userID = args['userID'];
-    print(role + userID + token);
 
     return Scaffold(
       appBar: AppBar(
