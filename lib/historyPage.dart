@@ -9,33 +9,42 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
+  // ✅ Local instance variables for this page
   bool isLoading = true;
+  bool _alreadyLoaded = false; // 🔹 Prevent double fetch
+  List<consults> completed = [];
 
   @override
   void initState() {
     super.initState();
-    loadConsults();
+    _loadConsultsOnce();
   }
 
-  Future<void> loadConsults() async {
+  Future<void> _loadConsultsOnce() async {
+    if (_alreadyLoaded) return; // 🔹 Prevent double call
+    _alreadyLoaded = true;
+
+    // 🔹 Call service
     await consultService.getAllConsults();
+
+    // 🔹 Copy completed consults to local instance variable
     setState(() {
+      completed = List.from(consultService.completed);
       isLoading = false;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-
-    // 🔄 LOADING
+    // 🔄 Loading state
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    // 📭 EMPTY
-    if (consultService.completed.isEmpty) {
+    // 📭 Empty state
+    if (completed.isEmpty) {
       return const Scaffold(
         body: Center(
           child: Text(
@@ -46,7 +55,7 @@ class _HistoryPageState extends State<HistoryPage> {
       );
     }
 
-    // ✅ DATA EXISTS
+    // ✅ Data exists
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(
@@ -54,19 +63,16 @@ class _HistoryPageState extends State<HistoryPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             const Text(
               'Consultation History',
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
-
             const SizedBox(height: 20),
-
             Expanded(
               child: ListView.builder(
-                itemCount: consultService.completed.length,
+                itemCount: completed.length,
                 itemBuilder: (context, index) {
-                  final consult = consultService.completed[index];
+                  final consult = completed[index];
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 15),
@@ -76,28 +82,23 @@ class _HistoryPageState extends State<HistoryPage> {
                       color: const Color.fromARGB(255, 146, 255, 164),
                     ),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-
                         Row(
                           children: [
                             Text(
                               consult.mod,
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
+                                  fontWeight: FontWeight.bold, fontSize: 15),
                             ),
-                            const SizedBox(width: 15),
+                            const SizedBox(width: 10),
                             const Icon(Icons.check_circle),
                           ],
                         ),
-
-                        const SizedBox(height: 8),
-
+                        const SizedBox(height: 10),
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-
                             Column(
                               children: [
                                 const CircleAvatar(
@@ -110,51 +111,53 @@ class _HistoryPageState extends State<HistoryPage> {
                                 Text(
                                   consult.lecturer,
                                   style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  ),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15),
                                 ),
                               ],
                             ),
-
                             const SizedBox(width: 15),
-
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Text('Date',
-                                    style: TextStyle(fontWeight: FontWeight.bold)),
-                                Text(consult.dates.join('/')),
-
-                                const SizedBox(height: 8),
-
-                                const Text('Time',
-                                    style: TextStyle(fontWeight: FontWeight.bold)),
-                                Text(consult.timeslot),
-
-                                const SizedBox(height: 8),
-
-                                const Text('Location',
-                                    style: TextStyle(fontWeight: FontWeight.bold)),
-                                Text(consult.location),
-                              ],
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Date',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  Text(consult.dates.isNotEmpty
+                                      ? consult.dates.join('/')
+                                      : 'No date'),
+                                  const SizedBox(height: 8),
+                                  const Text('Time',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  Text(consult.timeslot.isNotEmpty
+                                      ? consult.timeslot
+                                      : 'No timeslot'),
+                                  const SizedBox(height: 8),
+                                  const Text('Location',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold)),
+                                  Text(consult.location.isNotEmpty
+                                      ? consult.location
+                                      : 'No location'),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-
                         const SizedBox(height: 12),
-
                         FilledButton(
                           style: FilledButton.styleFrom(
-                            backgroundColor: Colors.white,
-                          ),
-                          onPressed: () {},
+                              backgroundColor: Colors.white),
+                          onPressed: () {
+                            // TODO: Show consultation notes
+                          },
                           child: const Text(
                             'Consultation Notes',
                             style: TextStyle(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                            ),
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold),
                           ),
                         ),
                       ],
@@ -169,6 +172,7 @@ class _HistoryPageState extends State<HistoryPage> {
     );
   }
 }
+
 
 
 // import 'package:flutter/material.dart';

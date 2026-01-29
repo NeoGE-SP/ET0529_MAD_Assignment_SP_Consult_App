@@ -41,10 +41,7 @@ class _BottomNavState extends State<BottomNav> {
         onTap: (value) {
           setState(() {
             currentpage = value;
-            studentProfile_Service.getAllStudents();
-            consultService.getAllConsults();
-            print(consultService.completed);
-            print(studentProfile_Service.z);
+            
           });
         },
         items: const [

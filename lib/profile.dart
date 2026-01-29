@@ -174,17 +174,26 @@ class _ProfilePageState extends State<ProfilePage> {
 // }
 
 // class _ProfilePageState extends State<ProfilePage> {
+//     @override
+//     void initState() {
+//       super.initState();
+//       loadProfile();
+//     }
+
+//   Future<void> loadProfile() async {
+//     await studentProfile_Service.getAllStudents();
+//     setState(() {
+//     });
+//   }
+
+//   final student = studentProfile_Service.z[0];
+
+  
 
 //   @override
 //   Widget build(BuildContext context) {
 
-    
-
-//     studentProfile_Service.name = studentProfile_Service.getProfileAt(0).name;
-//     studentProfile_Service.adm = studentProfile_Service.getProfileAt(0).adm;
-//     studentProfile_Service.classNo = studentProfile_Service.getProfileAt(0).classNo;
-//     studentProfile_Service.email = studentProfile_Service.getProfileAt(0).email;
-
+  
 //     return Scaffold(
 //       backgroundColor: Colors.white,
 //       body: Center(
@@ -235,7 +244,7 @@ class _ProfilePageState extends State<ProfilePage> {
 //                       SizedBox(width: 10,),
 //                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 //                         Text('Name', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-//                         Text(studentProfile_Service.name, style: TextStyle(fontSize: 15),) //Retrieve from firebase
+//                         Text(student.name, style: TextStyle(fontSize: 15),) //Retrieve from firebase
 //                       ],)
 //                     ],
 //                   ),
@@ -248,7 +257,7 @@ class _ProfilePageState extends State<ProfilePage> {
 //                       SizedBox(width: 10,),
 //                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 //                         Text('Adm. No.', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-//                         Text(studentProfile_Service.adm, style: TextStyle(fontSize: 15),) //Retrieve from firebase
+//                         Text(student.adm, style: TextStyle(fontSize: 15),) //Retrieve from firebase
 //                       ],)
 //                     ],
 //                   ),
@@ -261,7 +270,7 @@ class _ProfilePageState extends State<ProfilePage> {
 //                       SizedBox(width: 10,),
 //                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 //                         Text('Class', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-//                         Text(studentProfile_Service.classNo, style: TextStyle(fontSize: 15),) //Retrieve from firebase
+//                         Text(student.classNo, style: TextStyle(fontSize: 15),) //Retrieve from firebase
 //                       ],)
 //                     ],
 //                   ),
@@ -274,7 +283,7 @@ class _ProfilePageState extends State<ProfilePage> {
 //                       SizedBox(width: 10,),
 //                       Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 //                         Text('Email', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
-//                         Text(studentProfile_Service.email, style: TextStyle(fontSize: 15),) //Retrieve from firebase
+//                         Text(student.email, style: TextStyle(fontSize: 15),) //Retrieve from firebase
 //                       ],)
 //                     ],
 //                   ),

@@ -11,6 +11,8 @@ class studentProfile {
 }
 
 class studentProfile_Service {
+
+
   static List<studentProfile> z = [];
 
   static CollectionReference studentData =
@@ -40,100 +42,91 @@ class studentProfile_Service {
   }
 }
 
-/// =====================
-/// CONSULT MODEL
-/// =====================
 
 class consults {
-  String lecturer;
-  String lectureNotes;
-  String location;
-  String mod;
-  String status;
-  String student;
-  String studentNotes;
-  String timeslot;
+  String lecturer, lectureNotes, location, mod, status, student, studentNotes, timeslot;
   List<int> dates;
 
-  consults(
-    this.lecturer,
-    this.lectureNotes,
-    this.location,
-    this.mod,
-    this.status,
-    this.student,
-    this.studentNotes,
-    this.timeslot,
-    this.dates,
-  );
+  consults(this.lecturer, this.lectureNotes, this.location, this.mod, this.status, this.student,
+          this.studentNotes, this.timeslot, this.dates);
+
 }
 
-/// =====================
-/// CONSULT SERVICE
-/// =====================
 
 class consultService {
-  static List<consults> completed = [];
-  static List<consults> scheduled = [];
-  static List<consults> pending = [];
+    static List<consults> completed = [];
+    static List<consults> scheduled = [];
+    static List<consults> pending = [];
 
-  static CollectionReference consult =
+    static CollectionReference consult =
       FirebaseFirestore.instance.collection('consults');
 
-  static Future<void> getAllConsults() async {
-    // ✅ ALWAYS clear before reloading
-    completed.clear();
-    scheduled.clear();
-    pending.clear();
+    static Future<void> getAllConsults() async {
+      completed.clear();
+      scheduled.clear();
+      pending.clear();
+      QuerySnapshot qs = await consult.get();
+      print(qs.docs);
 
-    QuerySnapshot qs = await consult.get();
+      for (int i=0;i<qs.docs.length;i++){
+        DocumentSnapshot doc = qs.docs[i];
+        Map<String, dynamic> consultInfo = doc.data() as Map<String,dynamic>;
+      
+        final lecturer = consultInfo['lecturer']?.toString() ?? 'Unknown';
+        final lecturerNotes = consultInfo['lecturer_notes']?.toString() ?? '';
+        final location = consultInfo['location']?.toString() ?? 'Unknown';
+        final module = consultInfo['module']?.toString() ?? 'Unknown';
+        final student = consultInfo['student']?.toString() ?? 'Unknown';
+        final studentNotes = consultInfo['student_notes']?.toString() ?? '';
+        final timeslot = consultInfo['timeslot']?.toString() ?? '';
 
-    for (var doc in qs.docs) {
-      final consultInfo = doc.data() as Map<String, dynamic>;
 
-      // ✅ SAFE string comparison (case-insensitive)
-      final status =
-          consultInfo['status'].toString().toLowerCase();
 
-      final c = consults(
-        consultInfo['lecturer'],
-        consultInfo['lecturer_notes'],
-        consultInfo['location'],
-        consultInfo['module'],
-        consultInfo['status'],
-        consultInfo['student'],
-        consultInfo['student_notes'],
-        consultInfo['timeslot'].toString(), // 🔥 int → String
-        List<int>.from(consultInfo['date']), // 🔥 typed list
-      );
+      // ✅ Normalize status
+        final status = (consultInfo['status']?.toString() ?? 'pending').trim().toLowerCase();
 
-      // ✅ ADD TO CORRECT LIST
+        // ✅ Safe date conversion
+        final datesDynamic = consultInfo['date'];
+        final dates = <int>[];
+        if (datesDynamic != null && datesDynamic is List) {
+          for (var d in datesDynamic) {
+            if (d != null) dates.add(int.tryParse(d.toString()) ?? 0);
+          }
+        }
+
+
+      // Create consult object
+        final c = consults(
+          lecturer,
+          lecturerNotes,
+          location,
+          module,
+          status,
+          student,
+          studentNotes,
+          timeslot,
+          dates,
+        );
+
+
+
       if (status == 'completed') {
         completed.add(c);
+        print(completed);
       } else if (status == 'scheduled') {
         scheduled.add(c);
-      } else if (status == 'pending') {
+      } else {
         pending.add(c);
       }
-    }
+      }
 
-    // 🔎 Debug
+    // Debug
     print('Completed: ${completed.length}');
     print('Scheduled: ${scheduled.length}');
     print('Pending: ${pending.length}');
+
   }
 
-  static consults getComplete(int index) {
-    return completed[index];
-  }
-
-  static consults getScheduled(int index) {
-    return scheduled[index];
-  }
-
-  static consults getPending(int index) {
-    return pending[index];
-  }
 }
 
 
