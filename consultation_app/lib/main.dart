@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:mad_assignment_sp_consult_booking/homepage.dart';
 import 'firebase_options.dart';
 import 'package:mad_assignment_sp_consult_booking/login.dart';
+import 'package:mad_assignment_sp_consult_booking/bottomNav.dart';
 
 // Background message handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -38,12 +39,15 @@ void main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   runApp(MaterialApp(
-    initialRoute: '/', 
+    home: Login(),
+    //home: Newconsult1()
+    //home:Newconsult2()
+
     routes: {
-      '/': (context) => Login(),
-      '/home': (context) => HomePage(),
+       "/login": (context) => const Login(),
+       "/homepage": (context) => const BottomNav(),
+
     },
-    
   ));
 }
 
