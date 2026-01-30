@@ -1,8 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-/// =====================
-/// STUDENT PROFILE
-/// =====================
 
 class studentProfile {
   String adm, classNo, email, name;
@@ -38,6 +35,43 @@ class studentProfile_Service {
   }
 
   static studentProfile getProfileAt(int index) {
+    return z[index];
+  }
+}
+
+class lectureProfile {
+  String staffID, email, name;
+
+  lectureProfile(this.staffID, this.email, this.name);
+}
+
+class lectureProfile_Service {
+
+
+  static List<lectureProfile> z = [];
+
+  static CollectionReference lectureData =
+      FirebaseFirestore.instance.collection('lecturers');
+
+  static Future<void> getAllStudents() async {
+    z.clear();
+
+    QuerySnapshot qs = await lectureData.get();
+
+    for (var doc in qs.docs) {
+      final lectureInfo = doc.data() as Map<String, dynamic>;
+
+      z.add(
+        lectureProfile(
+          lectureInfo['adm'],
+          lectureInfo['name'],
+          lectureInfo['email'],
+        ),
+      );
+    }
+  }
+
+  static lectureProfile getProfileAt(int index) {
     return z[index];
   }
 }

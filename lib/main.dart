@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:mad_assignment_sp_consult_booking/homepage.dart';
 import 'package:mad_assignment_sp_consult_booking/newConsult1.dart';
 import 'package:mad_assignment_sp_consult_booking/newConsult2.dart';
+import 'package:mad_assignment_sp_consult_booking/scheduledConsults.dart';
 import 'firebase_options.dart';
 import 'bottomNav.dart';
 
@@ -16,7 +17,8 @@ void main() async {
 
 
   runApp(MaterialApp(
-    home: BottomNav(),
+    //home: BottomNav(),
+    home: ConfirmStudent(),
     //home: Newconsult1(),
     //home:Newconsult2(),
 
