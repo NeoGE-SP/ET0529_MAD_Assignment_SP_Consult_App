@@ -19,7 +19,7 @@ class _LectureHomeState extends State<LectureHome> {
           children: [
             const Padding(padding: EdgeInsetsGeometry.all(10)),
             const Text(
-              'Welcome Mark!', //add variable here for name from firebase
+              'Welcome Wang Wei!', //add variable here for name from firebase
               style: TextStyle(fontSize:30, fontWeight: FontWeight.bold),
             ),
 
@@ -33,9 +33,7 @@ class _LectureHomeState extends State<LectureHome> {
              Expanded(
               child: InkWell(
                 onTap: () {
-                 // Navigator.push(context, MaterialPageRoute(builder: builder))
-                  //Navigator.pushNamed(context, '/newConsult1');
-
+                  Navigator.pushNamed(context, '/scheduleLecture');
                 },
                 splashColor: Colors.black26,
                 borderRadius: BorderRadius.circular(25),

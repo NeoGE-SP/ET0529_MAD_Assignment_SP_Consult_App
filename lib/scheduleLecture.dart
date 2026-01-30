@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:mad_assignment_sp_consult_booking/data.dart';
 
-class ConfirmStudent extends StatefulWidget {
-  const ConfirmStudent({super.key});
+class ConfirmLecture extends StatefulWidget {
+  const ConfirmLecture({super.key});
 
   @override
-  State<ConfirmStudent> createState() => _ConfirmStudentState();
+  State<ConfirmLecture> createState() => _ConfirmLectureState();
 }
 
-class _ConfirmStudentState extends State<ConfirmStudent> {
+class _ConfirmLectureState extends State<ConfirmLecture> {
   // ✅ Local instance variables for this page
   bool isLoading = true;
   bool _alreadyLoaded = false; // 🔹 Prevent double fetch
@@ -125,7 +125,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                                   ),
                                   const SizedBox(height: 10),
                                   Text(
-                                    consult.lecturer,
+                                    consult.student,
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 15),
@@ -218,7 +218,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                                   ),
                                   const SizedBox(height: 10),
                                   Text(
-                                    consult.lecturer,
+                                    consult.student,
                                     style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 15),
@@ -263,10 +263,17 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                                   style: FilledButton.styleFrom(
                                       backgroundColor: Colors.white),
                                   onPressed: () {
-                                    // TODO: Show consultation notes
+                                    if(consult.location == 'online'){
+                                      //generate pop-up dialog box to put in link
+                                    } else {
+                                      //generate pop-up dialog box to put in location
+                                    }
+                                    //cannot proceed if empty
+
+                                    //change status from 'pending' to 'scheduled'
                                   },
                                   child: const Text(
-                                    'Cancel',
+                                    'Accpet',
                                     style: TextStyle(
                                         color: Colors.black,
                                         fontWeight: FontWeight.bold),
@@ -280,10 +287,14 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                                   style: FilledButton.styleFrom(
                                       backgroundColor: Colors.white),
                                   onPressed: () {
-                                    // TODO: Show consultation notes
+                                    // add pop-up dialog for lecturer to add in rejection reason: OPTIONAL
+
+                                    //send notification to student to reschedule
+
+                                    //consult will remain, will reflect new timing when updated
                                   },
                                   child: const Text(
-                                    'Reschedule',
+                                    'Reject',
                                     style: TextStyle(
                                         color: Colors.black,
                                         fontWeight: FontWeight.bold),

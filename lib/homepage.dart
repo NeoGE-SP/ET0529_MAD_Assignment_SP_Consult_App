@@ -65,6 +65,7 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: InkWell(
                 onTap: () {
+                  Navigator.pushNamed(context, '/scheduleStudent');
                 },
                 splashColor: Colors.black26,
                 borderRadius: BorderRadius.circular(25),

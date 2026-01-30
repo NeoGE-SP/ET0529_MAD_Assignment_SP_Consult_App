@@ -37,7 +37,7 @@ class _BottomNavState extends State<BottomNav> {
         ),
       ),
 
-      body: pagesLecture[currentpage],
+      body: pagesStudent[currentpage],
 
 
       bottomNavigationBar: BottomNavigationBar(
