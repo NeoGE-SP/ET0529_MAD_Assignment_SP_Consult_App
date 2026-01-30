@@ -53,7 +53,7 @@ class lectureProfile_Service {
   static CollectionReference lectureData =
       FirebaseFirestore.instance.collection('lecturers');
 
-  static Future<void> getAllStudents() async {
+  static Future<void> getAllLecturers() async {
     z.clear();
 
     QuerySnapshot qs = await lectureData.get();

@@ -18,7 +18,7 @@ class _LectureProfileState extends State<LectureProfile> {
   }
 
   Future<void> loadProfile() async {
-    await lectureProfile_Service.getAllStudents();
+    await lectureProfile_Service.getAllLecturers();
     setState(() {
       isLoading = false;
     });
@@ -34,11 +34,11 @@ class _LectureProfileState extends State<LectureProfile> {
     }
 
     // 📭 Empty state
-    if (studentProfile_Service.z.isEmpty) {
+    if (lectureProfile_Service.z.isEmpty) {
       return const Scaffold(
         body: Center(
           child: Text(
-            'No student profile found',
+            'No lecturer profile found',
             style: TextStyle(fontSize: 18),
           ),
         ),
