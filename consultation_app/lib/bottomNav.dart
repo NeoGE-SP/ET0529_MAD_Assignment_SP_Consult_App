@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:mad_assignment_sp_consult_booking/data.dart';
 import 'package:mad_assignment_sp_consult_booking/historyPage.dart';
 import 'package:mad_assignment_sp_consult_booking/homepage.dart';
+import 'package:mad_assignment_sp_consult_booking/lectureHome.dart';
+import 'package:mad_assignment_sp_consult_booking/lectureProfile.dart';
+import 'package:mad_assignment_sp_consult_booking/lecturerPastConsult.dart';
 import 'package:mad_assignment_sp_consult_booking/profile.dart';
 
 class BottomNav extends StatefulWidget {
@@ -12,7 +16,8 @@ class BottomNav extends StatefulWidget {
 
 class _BottomNavState extends State<BottomNav> {
 
-  List <Widget> pages = [HomePage(), HistoryPage(), ProfilePage()];
+  List <Widget> pagesStudent = [HomePage(), HistoryPage(), ProfilePage()];
+  List <Widget> pagesLecture = [LectureHome(), LectureHistoryPage(), LectureProfile()];
 
   int currentpage=0;
 
@@ -32,7 +37,7 @@ class _BottomNavState extends State<BottomNav> {
         ),
       ),
 
-      body: pages[currentpage],
+      body: pagesLecture[currentpage],
 
 
       bottomNavigationBar: BottomNavigationBar(
@@ -40,6 +45,7 @@ class _BottomNavState extends State<BottomNav> {
         onTap: (value) {
           setState(() {
             currentpage = value;
+            
           });
         },
         items: const [

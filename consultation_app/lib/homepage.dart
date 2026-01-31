@@ -105,7 +105,11 @@ class _HomePageState extends State<HomePage> {
 
              Expanded(
               child: InkWell(
-                onTap: () {},
+                onTap: () {
+                 // Navigator.push(context, MaterialPageRoute(builder: builder))
+                  Navigator.pushNamed(context, '/newConsult1');
+
+                },
                 splashColor: Colors.black26,
                 borderRadius: BorderRadius.circular(25),
                 child: Stack(
@@ -133,7 +137,9 @@ class _HomePageState extends State<HomePage> {
 
             Expanded(
               child: InkWell(
-                onTap: () {},
+                onTap: () {
+                  Navigator.pushNamed(context, '/scheduleStudent');
+                },
                 splashColor: Colors.black26,
                 borderRadius: BorderRadius.circular(25),
                 child: Stack(
