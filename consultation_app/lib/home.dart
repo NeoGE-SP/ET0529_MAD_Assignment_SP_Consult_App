@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mad_assignment_sp_consult_booking/notification_service.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -10,23 +13,65 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-    bool _isLoading = false;
+  bool _isLoading = false;
+  String? roleFound;
+  Map<String, dynamic>? userData;
+  bool isLoading = true;
 
-    Future<void> _getNotif(token, docID, role) async {
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  // Load both profile image and other user fields from Firestore
+  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    Map<String, dynamic>? data;
+
+    try {
+      final collections = ['students', 'lecturers'];
+      for (String col in collections) {
+        final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
+        if (doc.exists) {
+          data = doc.data();
+          roleFound = col;
+          break; // Stop once we find the document
+        }
+        if (data != null) {
+          setState(() {
+            userData = data;
+            userData!['role'] = roleFound; // store the role as well
+            print(roleFound);
+            isLoading = false;
+          });
+        } 
+    }} catch (e) {
+      print("Error loading user data: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
+    Future<void> _getNotif() async {
       setState(() {
         _isLoading = true;
       });
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      NotificationService notificationService = NotificationService();
+      String fcmToken = await notificationService.getFcmToken();
 
 
-      final url = Uri.parse('http://10.0.2.2:3000/getnotif');
+      final url = Uri.parse('https://triaryl-thi-unobliged.ngrok-free.dev/getnotif');
 
       await http.post(
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          'token': token,
-          'docID': docID,
-          'role': role,
+          'token': fcmToken,
+          'docID': user.uid,
+          'role': roleFound.toString(),
         })
       );
 
@@ -37,12 +82,7 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-
-    final role = args['role'];
-    Map<String, dynamic> userData = args['userData'];
-    final token = args['token'];
-    final userID = args['userID'];
+    
 
     return Scaffold(
       appBar: AppBar(
@@ -53,7 +93,7 @@ class _HomeState extends State<Home> {
         children: [
           Center(child: Text("This is Push Notifications Test")),
           Center(child: _isLoading ? const CircularProgressIndicator() :
-            TextButton(onPressed: () {_getNotif(token, userID, role);}, child: Text("Get Push Notif"))
+            TextButton(onPressed: () {_getNotif();}, child: Text("Get Push Notif"))
           )
         ],
       ),
