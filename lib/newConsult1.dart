@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mad_assignment_sp_consult_booking/data.dart';
 
 class Newconsult1 extends StatefulWidget {
   const Newconsult1({super.key});
@@ -12,231 +13,262 @@ class _Newconsult1State extends State<Newconsult1> {
   String? _selectedMode;
   String? _selectedLecturer;
 
+  List<String> lecturers = [];
+  List<Module> modules = [];
+
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    loadProfile();
+  }
+
+  Future<void> loadProfile() async {
+    await studentProfile_Service.getAllStudents();
+    final profile = studentProfile_Service.getProfileAt(0);
+
+    setState(() {
+      lecturers = profile?.lecturers ?? [];
+      modules = profile?.mods ?? [];
+      isLoading = false;
+    });
+  }
+
+  /// Map Firestore string to Material IconData
+  IconData getIconFromString(String iconName) {
+    switch (iconName) {
+      case 'phone_android':
+        return Icons.phone_android;
+      case 'memory':
+        return Icons.memory;
+      case 'desktop_windows':
+        return Icons.desktop_windows;
+      case 'functions':
+        return Icons.functions;
+      case 'groups':
+        return Icons.groups;
+      case 'videocam':
+        return Icons.videocam;
+      default:
+        return Icons.book;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Image.asset(
-                  'assets/img/sp_logo.png',
-                  height: 40,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Divider(height: 1, color: Color(0xFFBDBDBD)),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  onPressed: () => Navigator.pushNamed(context, '/HomePage'),
-                  icon: const Icon(Icons.close, size: 28),
-                  splashRadius: 20,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'New Consultation',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
-              ),
-              const SizedBox(height: 18),
-              const Text(
-                'Module Name / Code',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 16,
-                runSpacing: 16,
-                children: [
-                  _OptionCard(
-                    label: 'ET0529/MAD',
-                    tint: Color(0xFFF3E9F5),
-                    icon: Icons.phone_android,
-                    selected: _selectedModule == 'ET0529/MAD',
-                    onTap: () {
-                      setState(() {
-                        _selectedModule = 'ET0529/MAD';
-                      });
-                    },
-                  ),
-                  _OptionCard(
-                    label: 'ET1010/MAPP',
-                    tint: Color(0xFFE6F0FA),
-                    icon: Icons.memory,
-                    selected: _selectedModule == 'ET1010/MAPP',
-                    onTap: () {
-                      setState(() {
-                        _selectedModule = 'ET1010/MAPP';
-                      });
-                    },
-                  ),
-                  _OptionCard(
-                    label: 'ET0744/FSD',
-                    tint: Color(0xFFF2F2F2),
-                    icon: Icons.desktop_windows,
-                    selected: _selectedModule == 'ET0744/FSD',
-                    onTap: () {
-                      setState(() {
-                        _selectedModule = 'ET0744/FSD';
-                      });
-                    },
-                  ),
-                  _OptionCard(
-                    label: 'ET0602/AM2',
-                    tint: Color(0xFFF6ECE4),
-                    icon: Icons.functions,
-                    selected: _selectedModule == 'ET0602/AM2',
-                    onTap: () {
-                      setState(() {
-                        _selectedModule = 'ET0602/AM2';
-                      });
-                    },
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Lecturer Name',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(
-                  hintText: 'Select lecturer',
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.grey),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.grey),
-                  ),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'lect1', child: Text('Mr Lee')),
-                  DropdownMenuItem(value: 'lect2', child: Text('Mr Lim')),
-                  DropdownMenuItem(value: 'lect3', child: Text('Ms Tan')),
-                ],
-                initialValue: _selectedLecturer,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedLecturer = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Preferred Mode of Consultation',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _OptionCard(
-                      label: 'Physical',
-                      tint: Color(0xFFE9F3F6),
-                      icon: Icons.groups,
-                      height: 64,
-                      selected: _selectedMode == 'Physical',
-                      onTap: () {
-                        setState(() {
-                          _selectedMode = 'Physical';
-                        });
-                      },
-                    ),
-                  ),
-                  SizedBox(width: 16),
-                  Expanded(
-                    child: _OptionCard(
-                      label: 'Online',
-                      tint: Color(0xFFF7E7DC),
-                      icon: Icons.videocam,
-                      height: 64,
-                      selected: _selectedMode == 'Online',
-                      onTap: () {
-                        setState(() {
-                          _selectedMode = 'Online';
-                        });
-                      },
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Pre-Consult Questions (Optional)',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 8),
-              TextField(
-                maxLines: 5,
-                decoration: InputDecoration(
-                  hintText: '',
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.grey),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Colors.grey),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: SizedBox(
-                  width: 220,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_selectedModule == null ||
-                          _selectedMode == null ||
-                          _selectedLecturer == null) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content:
-                                Text('Please fill in all required options.'),
-                          ),
-                        );
-                        return;
-                      }
-                      Navigator.pushNamed(context, '/newConsult2');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE0443E),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
-                      ),
-                    ),
-                    child: const Text(
-                      'Proceed',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white  ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-            ],
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.pushNamed(context, '/bottomNav'),
+        ),
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Image.asset(
+          'assets/img/sp_logo.png',
+          height: 40,
+          fit: BoxFit.contain,
+        ),
+        shape: const Border(
+          bottom: BorderSide(
+            color: Color.fromARGB(255, 195, 195, 195),
+            width: 2,
           ),
         ),
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'New Consultation',
+                      style:
+                          TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 18),
+
+                    /// MODULES
+                    const Text(
+                      'Module Name / Code',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 12),
+
+                    modules.isEmpty
+                        ? const Text(
+                            'No modules available',
+                            style: TextStyle(color: Colors.grey),
+                          )
+                        : Wrap(
+                            spacing: 16,
+                            runSpacing: 16,
+                            children: modules.map((module) {
+                              return _OptionCard(
+                                label: module.modCode,
+                                tint: const Color(0xFFF3E9F5),
+                                icon: getIconFromString(module.modIcon),
+                                selected: _selectedModule == module.modCode,
+                                onTap: () {
+                                  setState(() {
+                                    _selectedModule = module.modCode;
+                                    lecturers = module.lectureSelect;
+                                    _selectedLecturer = null;
+                                  });
+                                },
+                              );
+                            }).toList(),
+                          ),
+
+                    const SizedBox(height: 24),
+
+                    /// LECTURER DROPDOWN
+                    const Text(
+                      'Lecturer Name',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<String>(
+                      value: _selectedLecturer,
+                      decoration: InputDecoration(
+                        hintText: 'Select lecturer',
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 12),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      items: lecturers.map((lecturer) {
+                        return DropdownMenuItem<String>(
+                          value: lecturer,
+                          child: Text(lecturer),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedLecturer = value;
+                        });
+                      },
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// MODE
+                    const Text(
+                      'Preferred Mode of Consultation',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _OptionCard(
+                            label: 'Physical',
+                            tint: const Color(0xFFE9F3F6),
+                            icon: Icons.groups,
+                            height: 64,
+                            selected: _selectedMode == 'Physical',
+                            onTap: () {
+                              setState(() {
+                                _selectedMode = 'Physical';
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: _OptionCard(
+                            label: 'Online',
+                            tint: const Color(0xFFF7E7DC),
+                            icon: Icons.videocam,
+                            height: 64,
+                            selected: _selectedMode == 'Online',
+                            onTap: () {
+                              setState(() {
+                                _selectedMode = 'Online';
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// QUESTIONS
+                    const Text(
+                      'Pre-Consult Questions (Optional)',
+                      style:
+                          TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      maxLines: 5,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    /// PROCEED BUTTON
+                    Center(
+                      child: SizedBox(
+                        width: 220,
+                        height: 48,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            if (_selectedModule == null ||
+                                _selectedMode == null ||
+                                _selectedLecturer == null) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  backgroundColor: Colors.red,
+                                  content: Text(
+                                      'Please fill in all required options.'),
+                                ),
+                              );
+                              return;
+                            }
+                            Navigator.pushNamed(context, '/newConsult2');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFE0443E),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                          child: const Text(
+                            'Proceed',
+                            style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 100),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 }
 
+/// OPTION CARD
 class _OptionCard extends StatelessWidget {
   const _OptionCard({
     required this.label,
@@ -267,25 +299,10 @@ class _OptionCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         height: height,
-        width: 150,
         decoration: BoxDecoration(
           color: tint,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: borderColor, width: selected ? 2 : 1),
-          boxShadow: [
-            if (selected)
-              const BoxShadow(
-                color: Color(0x26E0443E),
-                blurRadius: 8,
-                offset: Offset(0, 4),
-              )
-            else
-              const BoxShadow(
-                color: Color(0x14000000),
-                blurRadius: 6,
-                offset: Offset(0, 3),
-              ),
-          ],
         ),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Row(

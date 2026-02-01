@@ -27,6 +27,7 @@ class _BottomNavState extends State<BottomNav> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
+        automaticallyImplyLeading: false,
         centerTitle: true,
         title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
         shape: Border(
@@ -37,7 +38,7 @@ class _BottomNavState extends State<BottomNav> {
         ),
       ),
 
-      body: pagesLecture[currentpage],
+      body: pagesStudent[currentpage],
 
 
       bottomNavigationBar: BottomNavigationBar(

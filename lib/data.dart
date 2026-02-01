@@ -1,27 +1,52 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+class Module {
+  final String modCode;
+  final String modIcon;
+  final List<String> lectureSelect;
+
+  Module(this.modCode, this.modIcon, this.lectureSelect);
+}
+
 
 class studentProfile {
   String adm, classNo, email, name;
+  List<String> lecturers;
+  List<Module> mods;
 
-  studentProfile(this.adm, this.classNo, this.email, this.name);
+  studentProfile(this.adm, this.classNo, this.email, this.name, this.lecturers, this.mods);
 }
 
 class studentProfile_Service {
-
-
   static List<studentProfile> z = [];
-
   static CollectionReference studentData =
       FirebaseFirestore.instance.collection('students');
 
   static Future<void> getAllStudents() async {
     z.clear();
-
     QuerySnapshot qs = await studentData.get();
 
     for (var doc in qs.docs) {
       final studentInfo = doc.data() as Map<String, dynamic>;
+
+      // Lecturers
+      final List<String> lecturers =
+          studentInfo['Lecturers'] != null
+              ? List<String>.from(studentInfo['Lecturers'])
+              : [];
+
+      final List<Module> mods = studentInfo['Modules'] != null
+        ? (studentInfo['Modules'] as List).map((m) {
+            final List<String> moduleLecturers = m['lecturer'] != null
+                ? List<String>.from(m['lecturer'])
+                : [];
+            return Module(
+              m['modCode'] ?? 'Unknown',
+              m['modIcon'] ?? 'book',
+              moduleLecturers,
+            );
+          }).toList()
+        : [];
 
       z.add(
         studentProfile(
@@ -29,15 +54,20 @@ class studentProfile_Service {
           studentInfo['class'],
           studentInfo['email'],
           studentInfo['name'],
+          lecturers,
+          mods,
         ),
       );
     }
   }
 
-  static studentProfile getProfileAt(int index) {
+  static studentProfile? getProfileAt(int index) {
+    if (index < 0 || index >= z.length) return null;
     return z[index];
   }
 }
+
+
 
 class lectureProfile {
   String staffID, email, name;

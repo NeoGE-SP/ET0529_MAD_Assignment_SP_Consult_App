@@ -8,7 +8,7 @@ class Newconsult2 extends StatefulWidget {
 }
 
 class _Newconsult2State extends State<Newconsult2> {
-  DateTime _focusedMonth = DateTime(2020, 10);
+  DateTime _focusedMonth = DateTime(2026, 01);
   DateTime? _selectedDate;
   String? _selectedTime;
 
@@ -16,34 +16,26 @@ class _Newconsult2State extends State<Newconsult2> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      appBar: AppBar(
+        leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pushNamed(context, '/newConsult1'),),
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
+        shape: Border(
+          bottom: BorderSide(
+            color: const Color.fromARGB(255, 195, 195, 195),
+            width: 2,
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Image.asset(
-                  'assets/img/sp_logo.png',
-                  height: 40,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Divider(height: 1, color: Color(0xFFBDBDBD)),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(Icons.close, size: 28),
-                  splashRadius: 20,
-                ),
-              ),
-              const SizedBox(height: 8),
               const Text(
                 'New Consultation',
-                style: TextStyle(fontSize: 26, fontWeight: FontWeight.w700),
+                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
               _CalendarCard(
@@ -116,7 +108,9 @@ class _Newconsult2State extends State<Newconsult2> {
                   width: 240,
                   height: 48,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFE0443E),
                       shape: RoundedRectangleBorder(
@@ -138,8 +132,7 @@ class _Newconsult2State extends State<Newconsult2> {
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }
 

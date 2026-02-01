@@ -25,6 +25,7 @@ void main() async {
     //home:Newconsult2(),
 
       routes: {
+        "/bottomNav": (context) => const BottomNav(),
         "/HomePage": (context) => const HomePage(),
         "/newConsult1": (context) => const Newconsult1(),
         "/newConsult2": (context) => const Newconsult2(),

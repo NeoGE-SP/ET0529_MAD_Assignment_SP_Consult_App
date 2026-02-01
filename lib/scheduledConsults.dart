@@ -69,6 +69,17 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
 
     // ✅ Data exists
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
+        shape: Border(
+          bottom: BorderSide(
+            color: const Color.fromARGB(255, 195, 195, 195),
+            width: 2,
+          ),
+        ),
+      ),
       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16),
