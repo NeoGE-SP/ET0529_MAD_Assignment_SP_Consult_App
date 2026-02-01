@@ -69,6 +69,17 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
 
     // ✅ Data exists
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
+        shape: Border(
+          bottom: BorderSide(
+            color: const Color.fromARGB(255, 195, 195, 195),
+            width: 2,
+          ),
+        ),
+      ),
       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -76,7 +87,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Consultation History',
+              'Scheduled / Pending Consultations',
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -140,8 +151,8 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                                     const Text('Date',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold)),
-                                    Text(consult.dates.isNotEmpty
-                                        ? consult.dates.join('/')
+                                    Text(consult.date.isNotEmpty
+                                        ? consult.date
                                         : 'No date'),
                                     const SizedBox(height: 8),
                                     const Text('Time',
@@ -233,8 +244,8 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                                     const Text('Date',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold)),
-                                    Text(consult.dates.isNotEmpty
-                                        ? consult.dates.join('/')
+                                    Text(consult.date.isNotEmpty
+                                        ? consult.date
                                         : 'No date'),
                                     const SizedBox(height: 8),
                                     const Text('Time',

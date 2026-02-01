@@ -51,7 +51,7 @@ void main() async {
 
     routes: {
       "/login": (context) => const Login(),
-      "/HomePage": (context) => NoteSummarizer(),
+      "/HomePage": (context) => BottomNav(),
       "/newConsult1": (context) => const Newconsult1(),
       "/newConsult2": (context) => const Newconsult2(),
       "/scheduleStudent": (context) => const ConfirmStudent(),

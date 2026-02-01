@@ -140,8 +140,8 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                     const Text('Date',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold)),
-                                    Text(consult.dates.isNotEmpty
-                                        ? consult.dates.join('/')
+                                    Text(consult.date.isNotEmpty
+                                        ? consult.date
                                         : 'No date'),
                                     const SizedBox(height: 8),
                                     const Text('Time',
@@ -233,8 +233,8 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                     const Text('Date',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold)),
-                                    Text(consult.dates.isNotEmpty
-                                        ? consult.dates.join('/')
+                                    Text(consult.date.isNotEmpty
+                                        ? consult.date
                                         : 'No date'),
                                     const SizedBox(height: 8),
                                     const Text('Time',

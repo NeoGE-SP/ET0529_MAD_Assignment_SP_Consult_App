@@ -130,7 +130,7 @@ class _HomePageState extends State<HomePage> {
                     
                   ),
 
-                  Text('View scheduled consultations', style: TextStyle(fontSize:30, fontWeight: FontWeight.bold)),
+                  Text('View scheduled / pending consultations', style: TextStyle(fontSize:30, fontWeight: FontWeight.bold)),
                   
                   ]
                 ),

@@ -124,8 +124,8 @@ class _HistoryPageState extends State<HistoryPage> {
                                   const Text('Date',
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold)),
-                                  Text(consult.dates.isNotEmpty
-                                      ? consult.dates.join('/')
+                                  Text(consult.date.isNotEmpty
+                                      ? consult.date
                                       : 'No date'),
                                   const SizedBox(height: 8),
                                   const Text('Time',

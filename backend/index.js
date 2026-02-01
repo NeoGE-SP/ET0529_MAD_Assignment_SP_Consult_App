@@ -39,21 +39,26 @@ async function getDataFromFirestore(docID, role) {
 async function sendRequestNotification(token, docID, role) {
   const data = await getDataFromFirestore(docID, role);
 
-  const message = {
-    tokens: token,
-    notification: { title: "Consultation Appointment Request", body: `${data.name} of class ${data.class} for module ${data.module} has requested a consultation` },
-  };
+  if (Array.isArray(token) && token.length > 0) {
+    const message = {
+      tokens: token,
+      notification: { title: "Consultation Appointment Request", body: `${data.name} of class ${data.class} for module ${data.module} has requested a consultation` },
+    };
 
-  const response = await admin.messaging().sendEachForMulticast(message);
+    const response = await admin.messaging().sendEachForMulticast(message);
 
-  console.log("Success:", response.successCount);
-  console.log("Failures:", response.failureCount);
+    console.log("Success:", response.successCount);
+    console.log("Failures:", response.failureCount);
 
-  response.responses.forEach((resp, idx) => {
-    if (!resp.success) {
-      console.error(`Token ${tokens[idx]} failed:`, resp.error);
-    }
-  });
+    response.responses.forEach((resp, idx) => {
+      if (!resp.success) {
+        console.error(`Token ${tokens[idx]} failed:`, resp.error);
+      }
+    });
+  }
+  else {
+    console.log('No tokens provided (lecturer not logged in on any device). Skipping notification, but request is successful.');
+  }
 }
 
 async function sendReminderNotification(token, docID, role) {
