@@ -141,10 +141,11 @@ class LectureProfileService {
 
 
 class consults {
-  String lecturer, lectureNotes, location, mod, status, student, studentNotes, timeslot, date;
+  String lecturer, lectureNotes, location, mod, status, student, studentNotes, timeslot, date, reason;
+  int code;
 
   consults(this.lecturer, this.lectureNotes, this.location, this.mod, this.status, this.student,
-          this.studentNotes, this.timeslot, this.date);
+          this.studentNotes, this.timeslot, this.date,this.reason, this.code);
 
 }
 
@@ -153,31 +154,33 @@ class consultService {
     static List<consults> completed = [];
     static List<consults> scheduled = [];
     static List<consults> pending = [];
+    static List<consults> rejected = [];
 
     static CollectionReference consult =
       FirebaseFirestore.instance.collection('consults');
 
-    static Future<void> getAllConsults() async {
+    static Future<void> getAllConsults(String role, String name) async {
       completed.clear();
       scheduled.clear();
       pending.clear();
-      QuerySnapshot qs = await consult.get();
+      rejected.clear();
+      QuerySnapshot qs = await consult.where(role, isEqualTo: name).get();
       print(qs.docs);
 
       for (int i=0;i<qs.docs.length;i++){
         DocumentSnapshot doc = qs.docs[i];
         Map<String, dynamic> consultInfo = doc.data() as Map<String,dynamic>;
       
-        final lecturer = consultInfo['lecturer']?.toString() ?? 'Unknown';
+        final lecturer = consultInfo['lecturers']?.toString() ?? 'Unknown';
         final lecturerNotes = consultInfo['lecturer_notes']?.toString() ?? '';
         final location = consultInfo['location']?.toString() ?? 'Unknown';
         final module = consultInfo['module']?.toString() ?? 'Unknown';
-        final student = consultInfo['student']?.toString() ?? 'Unknown';
+        final student = consultInfo['students']?.toString() ?? 'Unknown';
         final studentNotes = consultInfo['student_notes']?.toString() ?? '';
         final timeslot = consultInfo['timeslot']?.toString() ?? '';
         final date = ((consultInfo['date'])?.toString()) ?? '';
-
-
+        final reason = ((consultInfo['rej_reason'])?.toString()) ?? '';
+        final code = consultInfo['consult_code'] ?? 0;
 
       // ✅ Normalize status
         final status = (consultInfo['status']?.toString() ?? 'pending').trim().toLowerCase();
@@ -193,6 +196,8 @@ class consultService {
           studentNotes,
           timeslot,
           date,
+          reason,
+          code,
         );
 
 
@@ -202,8 +207,10 @@ class consultService {
         print(completed);
       } else if (status == 'scheduled') {
         scheduled.add(c);
-      } else {
+      } else if (status == 'pending') {
         pending.add(c);
+      } else {
+        rejected.add(c);
       }
       }
 
@@ -211,7 +218,7 @@ class consultService {
     print('Completed: ${completed.length}');
     print('Scheduled: ${scheduled.length}');
     print('Pending: ${pending.length}');
-
+    print('Rejected: ${rejected.length}');
   }
 
 }

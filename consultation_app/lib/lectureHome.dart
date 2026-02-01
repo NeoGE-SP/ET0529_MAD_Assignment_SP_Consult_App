@@ -11,6 +11,7 @@ class LectureHome extends StatefulWidget {
 
 class _LectureHomeState extends State<LectureHome> {
   String? roleFound;
+  String? nameFound;
   Map<String, dynamic>? userData;
   bool isLoading = true;
 
@@ -42,7 +43,9 @@ class _LectureHomeState extends State<LectureHome> {
     if (data != null) {
       setState(() {
         userData = data;
-        userData!['role'] = roleFound; // store the role as well
+        userData!['role'] = roleFound;
+        nameFound = userData!['name'];
+
         print(roleFound);
         isLoading = false;
       });
@@ -64,8 +67,8 @@ class _LectureHomeState extends State<LectureHome> {
           
           children: [
             const Padding(padding: EdgeInsetsGeometry.all(10)),
-            const Text(
-              'Welcome Wang Wei!', //add variable here for name from firebase
+            Text(
+              'Welcome, $nameFound!', //add variable here for name from firebase
               style: TextStyle(fontSize:30, fontWeight: FontWeight.bold),
             ),
 

@@ -1,5 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mad_assignment_sp_consult_booking/data.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ConfirmLecture extends StatefulWidget {
   const ConfirmLecture({super.key});
@@ -15,6 +19,12 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
   List<consults> scheduled = [];
   List<consults> pending = [];
   List<consults> overall = [];
+  Map<String, dynamic>? userData;
+  String? roleFound;
+  String? specDocID;
+
+  final TextEditingController rejectReason = new TextEditingController();
+  final TextEditingController location = new TextEditingController();
 
   @override
   void initState() {
@@ -26,8 +36,41 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
     if (_alreadyLoaded) return; // 🔹 Prevent double call
     _alreadyLoaded = true;
 
+    final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+  Map<String, dynamic>? data;
+
+  try {
+    final collections = ['students', 'lecturers'];
+
+    // Try fetching from each collection
+    for (String col in collections) {
+      final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
+      if (doc.exists) {
+        data = doc.data();
+        roleFound = col;
+        break; // Stop once we find the document
+      }
+    }
+
+    if (data != null) {
+      setState(() {
+        userData = data;
+        userData!['role'] = roleFound; // store the role as well
+        print(roleFound);
+        isLoading = false;
+      });
+    } else {
+      print("User document not found in any collection!");
+      setState(() => isLoading = false);
+    }
+  } catch (e) {
+    print("Error loading user data: $e");
+    setState(() => isLoading = false);
+  }
+
     // 🔹 Call service
-    await consultService.getAllConsults();
+    await consultService.getAllConsults(roleFound.toString(), data!['name'].toString());
 
     // 🔹 Copy completed consults to local instance variable
     setState(() {
@@ -46,6 +89,60 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
     });
   }
 
+  Future<void> getId(int code) async {
+    final query = await FirebaseFirestore.instance
+          .collection('consults')
+          .where('consult_code', isEqualTo: code)
+          .limit(1)
+          .get();
+
+    String id = query.docs.first.id;
+    print(id);
+
+    setState(() {
+      specDocID = id;
+    });
+
+    print("got id");
+  }
+
+  Future<void> sendRejection(String documentID, String chosenStudent, int code) async {
+      final query = await FirebaseFirestore.instance
+            .collection('students')
+            .where('name', isEqualTo: chosenStudent)
+            .limit(1)
+            .get();
+
+      final url = Uri.parse('https://triaryl-thi-unobliged.ngrok-free.dev/rejectnotif');
+
+      final data = query.docs.first.data();
+      final id = query.docs.first.id;
+
+      await http.post(
+          url,
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({
+            'token': data['fcmTokens'],
+            'docID': id,
+            'role': 'students',
+          })
+        );
+
+      await FirebaseFirestore.instance
+        .collection('consults')
+        .doc(documentID)
+        .update({
+          'rej_reason': rejectReason.text,
+          'status': "rejected",
+      });
+
+      setState(() {
+        overall.removeWhere((item) => item.code == code);
+        pending.removeWhere((item) => item.code == code);
+      });
+      print("Rejection Complete");
+  }
+
   @override
   Widget build(BuildContext context) {
     // 🔄 Loading state
@@ -57,7 +154,22 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
 
     // 📭 Empty state
     if (overall.isEmpty) {
-      return const Scaffold(
+      return Scaffold(
+        appBar: AppBar(
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pushNamed(context, '/HomePage'),
+        ),
+        shape: Border(
+          bottom: BorderSide(
+            color: const Color.fromARGB(255, 195, 195, 195),
+            width: 2,
+          ),
+        ),
+      ),
         body: Center(
           child: Text(
             'No pending or scheduled consultations',
@@ -69,6 +181,21 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
 
     // ✅ Data exists
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pushNamed(context, '/HomePage'),
+        ),
+        shape: Border(
+          bottom: BorderSide(
+            color: const Color.fromARGB(255, 195, 195, 195),
+            width: 2,
+          ),
+        ),
+      ),
       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -151,12 +278,25 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                         ? consult.timeslot
                                         : 'No timeslot'),
                                     const SizedBox(height: 8),
-                                    const Text('Location',
+                                    Row(children: [
+                                      Column(children: [
+                                        const Text('Location',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold)),
-                                    Text(consult.location.isNotEmpty
-                                        ? consult.location
-                                        : 'No location'),
+                                      Text(consult.location.isNotEmpty
+                                          ? consult.location
+                                          : 'No location'),
+                                      ],),
+                                      const SizedBox(width: 20,),
+                                      const Text("|"),
+                                      const SizedBox(width: 20,),
+                                      Column(children: [
+                                        const Text('Consult Code',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                      Text(consult.code.toString())
+                                      ],),
+                                      ],),
                                   ],
                                 ),
                               ),
@@ -177,6 +317,95 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                     fontWeight: FontWeight.bold),
                               ),
                             ),
+                          ),
+                        ],
+                      ),
+                    );
+                  } else if (consult.status == "rejected") {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 15),
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: const Color.fromARGB(255, 255, 146, 146),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                consult.mod,
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 15),
+                              ),
+                              const SizedBox(width: 10),
+                              const Icon(Icons.close, color: Colors.black,),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                children: [
+                                  const CircleAvatar(
+                                    radius: 40,
+                                    backgroundColor:
+                                        Color.fromARGB(255, 214, 214, 214),
+                                    child: Icon(Icons.person, size: 40),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    consult.lecturer,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(width: 15),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text('Date',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    Text(consult.date.isNotEmpty
+                                        ? consult.date
+                                        : 'No date'),
+                                    const SizedBox(height: 8),
+                                    const Text('Time',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    Text(consult.timeslot.isNotEmpty
+                                        ? consult.timeslot
+                                        : 'No timeslot'),
+                                    const SizedBox(height: 8),
+                                    Row(children: [
+                                      Column(children: [
+                                        const Text('Location',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                      Text(consult.location.isNotEmpty
+                                          ? consult.location
+                                          : 'No location'),
+                                      ],),
+                                      const SizedBox(width: 20,),
+                                      const Text("|"),
+                                      const SizedBox(width: 20,),
+                                      Column(children: [
+                                        const Text('Consult Code',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                      Text(consult.code.toString())
+                                      ],),
+                                      ],),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -244,12 +473,25 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                         ? consult.timeslot
                                         : 'No timeslot'),
                                     const SizedBox(height: 8),
-                                    const Text('Location',
+                                    Row(children: [
+                                      Column(children: [
+                                        const Text('Location',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold)),
-                                    Text(consult.location.isNotEmpty
-                                        ? consult.location
-                                        : 'No location'),
+                                      Text(consult.location.isNotEmpty
+                                          ? consult.location
+                                          : 'No location'),
+                                      ],),
+                                      const SizedBox(width: 20,),
+                                      const Text("|"),
+                                      const SizedBox(width: 20,),
+                                      Column(children: [
+                                        const Text('Consult Code',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                      Text(consult.code.toString())
+                                      ],),
+                                      ],),
                                   ],
                                 ),
                               ),
@@ -263,17 +505,67 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                   style: FilledButton.styleFrom(
                                       backgroundColor: Colors.white),
                                   onPressed: () {
-                                    if(consult.location == 'online'){
-                                      //generate pop-up dialog box to put in link
-                                    } else {
-                                      //generate pop-up dialog box to put in location
-                                    }
-                                    //cannot proceed if empty
+                                                                        showDialog(context: context, 
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        backgroundColor: Colors.white,
+                                        title: const Text('Confirm', style: TextStyle(fontSize: 20),),
+                                        content: const Text('Enter location/link to consult', style: 
+                                        TextStyle(fontSize: 16),),
 
-                                    //change status from 'pending' to 'scheduled'
+
+                                        actions: [
+                                          Column(children: [
+                                            TextField(
+                                              controller: location,
+                                              decoration: const InputDecoration(
+                                                labelText: 'Location/Meeting Link',
+                                                border: OutlineInputBorder()),
+
+                                            ),
+
+                                            SizedBox(height: 20,),
+                                            
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              children: [
+                                              MaterialButton(child: const Text('Confirm'), onPressed: (){
+                                                if (location.text.trim().isEmpty){
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    backgroundColor: Colors.red,
+                                                    content: Text(
+                                                        'Please enter location before proceeding.'),
+                                                    )
+                                                  );
+                                                }
+                                                else {
+                                                  Navigator.of(context).pop();
+
+                                                  //send notification, UPDATE status to SCHEDULED
+
+
+                                                }
+                                              }), 
+
+                                              MaterialButton(child: const Text('Cancel'), onPressed: (){
+                                                Navigator.of(context).pop();
+                                              })
+
+                                            ],)
+                                            
+                                          ],)
+                                                                                  
+                                        ],
+
+
+                                      );
+                                    }
+                                    );
+
                                   },
                                   child: const Text(
-                                    'Accpet',
+                                    'Accept',
                                     style: TextStyle(
                                         color: Colors.black,
                                         fontWeight: FontWeight.bold),
@@ -287,11 +579,50 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                   style: FilledButton.styleFrom(
                                       backgroundColor: Colors.white),
                                   onPressed: () {
-                                    // add pop-up dialog for lecturer to add in rejection reason: OPTIONAL
+                                    showDialog(context: context, 
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        backgroundColor: Colors.white,
+                                        title: const Text('Confirm', style: TextStyle(fontSize: 20),),
+                                        content: const Text('Add a Reason for Rejection (Optional)', style: 
+                                        TextStyle(fontSize: 16),),
 
-                                    //send notification to student to reschedule
 
-                                    //consult will remain, will reflect new timing when updated
+                                        actions: [
+                                          Column(children: [
+                                            TextField(
+                                              controller: rejectReason,
+                                              decoration: const InputDecoration(
+                                                labelText: 'Reason (Optional)',
+                                                border: OutlineInputBorder()),
+
+                                            ),
+
+                                            SizedBox(height: 20,),
+                                            
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              children: [
+                                              MaterialButton(child: const Text('Confirm'), onPressed: () async {
+                                                Navigator.of(context).pop();
+                                                await getId(consult.code);
+                                                sendRejection(specDocID.toString(), consult.student.toString(), consult.code);
+                                              }), 
+
+                                              MaterialButton(child: const Text('Cancel'), onPressed: (){
+                                                Navigator.of(context).pop();
+                                              })
+
+                                            ],)
+                                            
+                                          ],)
+                                                                                  
+                                        ],
+
+
+                                      );
+                                    }
+                                    );
                                   },
                                   child: const Text(
                                     'Reject',

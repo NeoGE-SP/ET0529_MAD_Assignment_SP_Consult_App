@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:mad_assignment_sp_consult_booking/bottomNav.dart';
 import 'package:mad_assignment_sp_consult_booking/home.dart';
 import 'package:mad_assignment_sp_consult_booking/openai_test.dart';
+import 'package:mad_assignment_sp_consult_booking/rescheduleConsult.dart';
 import 'firebase_options.dart';
 import 'package:mad_assignment_sp_consult_booking/login.dart';
 import 'package:mad_assignment_sp_consult_booking/newConsult1.dart';
@@ -56,6 +57,7 @@ void main() async {
       "/newConsult2": (context) => const Newconsult2(),
       "/scheduleStudent": (context) => const ConfirmStudent(),
       "/scheduleLecture": (context) => const ConfirmLecture(),
+      '/reschedConsult' : (context) => const Rescheduleconsult(),
     },
   ));
 }

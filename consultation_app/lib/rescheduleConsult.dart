@@ -6,14 +6,14 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:add_2_calendar/add_2_calendar.dart';
 
-class Newconsult2 extends StatefulWidget {
-  const Newconsult2({super.key});
+class Rescheduleconsult extends StatefulWidget {
+  const Rescheduleconsult({super.key});
 
   @override
-  State<Newconsult2> createState() => _Newconsult2State();
+  State<Rescheduleconsult> createState() => _RescheduleconsultState();
 }
 
-class _Newconsult2State extends State<Newconsult2> {
+class _RescheduleconsultState extends State<Rescheduleconsult> {
   DateTime _focusedMonth = DateTime(2026, 01);
   DateTime? _selectedDate;
   String? _selectedTime;
@@ -118,12 +118,9 @@ class _Newconsult2State extends State<Newconsult2> {
     });
   }
 
-  Future<void> sendRequest(String chosenLecturer,
-    String student,
-    String module,
+  Future<void> sendRequest(String documentID, String chosenLecturer,
     String date,
-    String timeslot,
-    String location,) async {
+    String timeslot,) async {
       final query = await FirebaseFirestore.instance
             .collection('lecturers')
             .where('name', isEqualTo: chosenLecturer)
@@ -144,30 +141,19 @@ class _Newconsult2State extends State<Newconsult2> {
             'role': 'lecturers',
           })
         );
-      final FirebaseFirestore firestore = FirebaseFirestore.instance;
 
       date = date.split(" ")[0];
-
-      int nextCode = await getNextConsultCode();
-
-      await firestore.collection('consults').add({
-        'consult_code': nextCode,
-        'lecturers': chosenLecturer,
-        'students': student,
-        'module': module,
-        'timeslot': timeslot,
-        'location': location,
-        'date': date,
-        'rej_reason': '',
-        'status': 'pending',
-        'lecturer_notes': '',
-        'student_notes': '',
-      
-        'created_at': FieldValue.serverTimestamp(),
-      });
+      await FirebaseFirestore.instance
+        .collection('consults')
+        .doc(documentID)
+        .update({
+          'date': date,
+          'timeslot': timeslot,
+          'status': 'pending',
+    });
       print("request sent lol");
 
-      final times = timeslot.split('-');
+      /* final times = timeslot.split('-');
       final startTime = DateTime.parse("$date ${times[0]}:00");
       final endTime = DateTime.parse("$date ${times[1]}:00");
       final title = "$module consultation with $student";
@@ -186,7 +172,7 @@ class _Newconsult2State extends State<Newconsult2> {
 
       // 3. Open the native calendar
       Add2Calendar.addEvent2Cal(event);
-      print("Added event or something");
+      print("Added event or something"); */
 }
 
 
@@ -194,18 +180,15 @@ class _Newconsult2State extends State<Newconsult2> {
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
+    print(args['docID']);
+
     String chosenLecturer = args['selectedLecturer'];
-    String chosenModule = args['selectedModule'];
-    String chosenMode = args['selectedMode'];
+    String documentID = args['docID'];
 
 
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamed(context, '/newConsult1'),
-        ),
         backgroundColor: Colors.white,
         centerTitle: true,
         title: Image.asset(
@@ -226,7 +209,7 @@ class _Newconsult2State extends State<Newconsult2> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'New Consultation',
+              'Reschedule Consultation',
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
@@ -288,7 +271,7 @@ class _Newconsult2State extends State<Newconsult2> {
                 child: ElevatedButton(
                   onPressed: (_selectedDate != null && _selectedTime != null)
                       ? () async {
-                          await sendRequest(chosenLecturer, userData!['name'], chosenModule, _selectedDate.toString(), _selectedTime.toString(), chosenMode);
+                          await sendRequest(documentID, chosenLecturer, _selectedDate.toString(), _selectedTime.toString());
                           Navigator.pushNamed(context, '/scheduleStudent');
                         }
                       : null,

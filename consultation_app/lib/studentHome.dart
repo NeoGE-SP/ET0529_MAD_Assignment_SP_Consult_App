@@ -12,6 +12,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String? roleFound;
+  String? nameFound;
   Map<String, dynamic>? userData;
   bool isLoading = true;
 
@@ -44,6 +45,7 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         userData = data;
         userData!['role'] = roleFound; // store the role as well
+        nameFound = userData!['name'];
         print(roleFound);
         isLoading = false;
       });
@@ -66,8 +68,8 @@ class _HomePageState extends State<HomePage> {
           
           children: [
             const Padding(padding: EdgeInsetsGeometry.all(10)),
-            const Text(
-              'Welcome Mark!', //add variable here for name from firebase
+            Text(
+              'Welcome, $nameFound!', //add variable here for name from firebase
               style: TextStyle(fontSize:30, fontWeight: FontWeight.bold),
             ),
 

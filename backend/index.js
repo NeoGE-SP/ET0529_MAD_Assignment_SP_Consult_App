@@ -28,6 +28,14 @@ app.post("/requestnotif", async (req, res) => {
   res.status(200).send({ success: true });
 });
 
+app.post("/rejectnotif", async (req, res) => {
+  const { token, docID, role } = req.body;
+  console.log(token)
+
+  sendRejectNotification(token, docID, role);
+  res.status(200).send({ success: true });
+});
+
 async function getDataFromFirestore(docID, role) {
     const docRef = db.collection(role).doc(docID);
     const docSnap = await docRef.get();
@@ -61,19 +69,28 @@ async function sendRequestNotification(token, docID, role) {
   }
 }
 
-async function sendReminderNotification(token, docID, role) {
+async function sendRejectNotification(token, docID, role) {
   const data = await getDataFromFirestore(docID, role);
 
-  const message = {
-    token: token,
-    notification: { title: "Consultation Appointment Reminder", body: `You have a consultation appointment with ${data.name} in 10 minutes at ${data.class}` },
-  };
+  if (Array.isArray(token) && token.length > 0) {
+    const message = {
+      tokens: token,
+      notification: { title: "Consultation Appointment Rejection", body: `Your appointment request for ${data.module} with ${data.name} has been rejected` },
+    };
 
-  try {
-    const response = await admin.messaging().send(message);
-    console.log("Notification sent successfully:", response);
-  } catch (err) {
-    console.error("Error sending notification:", err);
+    const response = await admin.messaging().sendEachForMulticast(message);
+
+    console.log("Success:", response.successCount);
+    console.log("Failures:", response.failureCount);
+
+    response.responses.forEach((resp, idx) => {
+      if (!resp.success) {
+        console.error(`Token ${tokens[idx]} failed:`, resp.error);
+      }
+    });
+  }
+  else {
+    console.log('No tokens provided (student not logged in on any device). Skipping notification, but rejection is successful.');
   }
 }
 

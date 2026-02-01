@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mad_assignment_sp_consult_booking/data.dart';
 
@@ -9,10 +11,12 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
-  // ✅ Local instance variables for this page
+ // ✅ Local instance variables for this page
   bool isLoading = true;
   bool _alreadyLoaded = false; // 🔹 Prevent double fetch
   List<consults> completed = [];
+  Map<String, dynamic>? userData;
+  String? roleFound;
 
   @override
   void initState() {
@@ -24,8 +28,41 @@ class _HistoryPageState extends State<HistoryPage> {
     if (_alreadyLoaded) return; // 🔹 Prevent double call
     _alreadyLoaded = true;
 
+    final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+  Map<String, dynamic>? data;
+
+  try {
+    final collections = ['students', 'lecturers'];
+
+    // Try fetching from each collection
+    for (String col in collections) {
+      final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
+      if (doc.exists) {
+        data = doc.data();
+        roleFound = col;
+        break; // Stop once we find the document
+      }
+    }
+
+    if (data != null) {
+      setState(() {
+        userData = data;
+        userData!['role'] = roleFound; // store the role as well
+        print(roleFound);
+        isLoading = false;
+      });
+    } else {
+      print("User document not found in any collection!");
+      setState(() => isLoading = false);
+    }
+  } catch (e) {
+    print("Error loading user data: $e");
+    setState(() => isLoading = false);
+  }
+
     // 🔹 Call service
-    await consultService.getAllConsults();
+    await consultService.getAllConsults(roleFound.toString(), data!['name'].toString());
 
     // 🔹 Copy completed consults to local instance variable
     setState(() {
@@ -33,6 +70,7 @@ class _HistoryPageState extends State<HistoryPage> {
       isLoading = false;
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +83,22 @@ class _HistoryPageState extends State<HistoryPage> {
 
     // 📭 Empty state
     if (completed.isEmpty) {
-      return const Scaffold(
+      return Scaffold(
+        appBar: AppBar(
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pushNamed(context, '/HomePage'),
+        ),
+        shape: Border(
+          bottom: BorderSide(
+            color: const Color.fromARGB(255, 195, 195, 195),
+            width: 2,
+          ),
+        ),
+      ),
         body: Center(
           child: Text(
             'No completed consultations yet',
@@ -135,12 +188,25 @@ class _HistoryPageState extends State<HistoryPage> {
                                       ? consult.timeslot
                                       : 'No timeslot'),
                                   const SizedBox(height: 8),
-                                  const Text('Location',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
-                                  Text(consult.location.isNotEmpty
-                                      ? consult.location
-                                      : 'No location'),
+                                  Row(children: [
+                                      Column(children: [
+                                        const Text('Location',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                      Text(consult.location.isNotEmpty
+                                          ? consult.location
+                                          : 'No location'),
+                                      ],),
+                                      const SizedBox(width: 20,),
+                                      const Text("|"),
+                                      const SizedBox(width: 20,),
+                                      Column(children: [
+                                        const Text('Consult Code',
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                      Text(consult.code.toString())
+                                      ],),
+                                      ],),
                                 ],
                               ),
                             ),
