@@ -14,11 +14,17 @@ const db = admin.firestore();
 
 app.post("/getnotif", async (req, res) => {
   const { token, docID, role } = req.body;
-  console.log(role);
-  console.log(docID);
-  console.log(token);
 
   sendNotificationToToken(token, docID, role);
+  res.status(200).send({ success: true });
+});
+
+
+app.post("/requestnotif", async (req, res) => {
+  const { token, docID, role } = req.body;
+  console.log(token)
+
+  sendRequestNotification(token, docID, role);
   res.status(200).send({ success: true });
 });
 
@@ -30,7 +36,27 @@ async function getDataFromFirestore(docID, role) {
     return data 
 }
 
-async function sendNotificationToToken(token, docID, role) {
+async function sendRequestNotification(token, docID, role) {
+  const data = await getDataFromFirestore(docID, role);
+
+  const message = {
+    tokens: token,
+    notification: { title: "Consultation Appointment Request", body: `${data.name} of class ${data.class} for module ${data.module} has requested a consultation` },
+  };
+
+  const response = await admin.messaging().sendEachForMulticast(message);
+
+  console.log("Success:", response.successCount);
+  console.log("Failures:", response.failureCount);
+
+  response.responses.forEach((resp, idx) => {
+    if (!resp.success) {
+      console.error(`Token ${tokens[idx]} failed:`, resp.error);
+    }
+  });
+}
+
+async function sendReminderNotification(token, docID, role) {
   const data = await getDataFromFirestore(docID, role);
 
   const message = {

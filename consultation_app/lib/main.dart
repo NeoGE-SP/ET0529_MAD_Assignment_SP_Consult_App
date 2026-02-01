@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:mad_assignment_sp_consult_booking/homepage.dart';
-import 'firebase_options.dart';
-import 'package:mad_assignment_sp_consult_booking/login.dart';
 import 'package:mad_assignment_sp_consult_booking/bottomNav.dart';
 import 'package:mad_assignment_sp_consult_booking/home.dart';
+import 'package:mad_assignment_sp_consult_booking/openai_test.dart';
+import 'firebase_options.dart';
+import 'package:mad_assignment_sp_consult_booking/login.dart';
+import 'package:mad_assignment_sp_consult_booking/newConsult1.dart';
+import 'package:mad_assignment_sp_consult_booking/newConsult2.dart';
+import 'package:mad_assignment_sp_consult_booking/scheduleLecture.dart';
+import 'package:mad_assignment_sp_consult_booking/scheduledConsults.dart';
+import 'package:mad_assignment_sp_consult_booking/openai_test.dart';
 
 // Background message handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -45,9 +50,12 @@ void main() async {
     //home:Newconsult2()
 
     routes: {
-       "/login": (context) => const Login(),
-       "/homepage": (context) => const BottomNav(),
-
+      "/login": (context) => const Login(),
+      "/HomePage": (context) => NoteSummarizer(),
+      "/newConsult1": (context) => const Newconsult1(),
+      "/newConsult2": (context) => const Newconsult2(),
+      "/scheduleStudent": (context) => const ConfirmStudent(),
+      "/scheduleLecture": (context) => const ConfirmLecture(),
     },
   ));
 }

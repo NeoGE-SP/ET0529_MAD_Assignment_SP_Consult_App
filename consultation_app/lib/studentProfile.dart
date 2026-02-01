@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image/image.dart' as img;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mad_assignment_sp_consult_booking/notification_service.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -151,6 +152,20 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> signOut() async {
+      NotificationService notificationService = NotificationService();
+      String fcmToken = await notificationService.getFcmToken();
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      await FirebaseFirestore.instance
+          .collection(roleFound.toString()) // or "lecturers", depending on role
+          .doc(user.uid)
+          .update({
+            "fcmTokens": FieldValue.arrayRemove([fcmToken])
+      });
+      await FirebaseAuth.instance.signOut();
+    }
+
   // Your main UI can remain completely unchanged
   @override
   Widget build(BuildContext context) {
@@ -232,6 +247,16 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ],
               ),
+            ),
+            SizedBox(height: 15,),
+            ElevatedButton(
+              onPressed: () async {
+                await signOut();
+                // navigation happens after signOut finishes
+                if (!mounted) return;
+                Navigator.pushReplacementNamed(context, '/login');
+              },
+              child: Text("Sign Out"),
             ),
           ],
         ),

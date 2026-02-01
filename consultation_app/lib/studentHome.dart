@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mad_assignment_sp_consult_booking/notification_service.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -60,21 +59,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     
-    Future<void> signOut() async {
-      NotificationService notificationService = NotificationService();
-      String fcmToken = await notificationService.getFcmToken();
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
-      await FirebaseFirestore.instance
-          .collection(roleFound.toString()) // or "lecturers", depending on role
-          .doc(user.uid)
-          .update({
-            "fcmTokens": FieldValue.arrayRemove([fcmToken])
-      });
-      await FirebaseAuth.instance.signOut();
-    }
-
-    
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -90,15 +74,6 @@ class _HomePageState extends State<HomePage> {
             const SizedBox(height: 5,),
 
             const Text('What would you like to do today?', style: TextStyle(fontSize: 15),),
-            ElevatedButton(
-              onPressed: () async {
-                await signOut();
-                // navigation happens after signOut finishes
-                if (!mounted) return;
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-              child: Text("Sign Out"),
-            ),
 
             const SizedBox(height: 30,),
 

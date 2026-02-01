@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:mad_assignment_sp_consult_booking/data.dart';
 import 'package:mad_assignment_sp_consult_booking/historyPage.dart';
-import 'package:mad_assignment_sp_consult_booking/homepage.dart';
+import 'package:mad_assignment_sp_consult_booking/studentHome.dart';
 import 'package:mad_assignment_sp_consult_booking/lectureHome.dart';
 import 'package:mad_assignment_sp_consult_booking/lectureProfile.dart';
 import 'package:mad_assignment_sp_consult_booking/lecturerPastConsult.dart';
-import 'package:mad_assignment_sp_consult_booking/profile.dart';
+import 'package:mad_assignment_sp_consult_booking/studentProfile.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class BottomNav extends StatefulWidget {
   const BottomNav({super.key});
@@ -15,14 +17,77 @@ class BottomNav extends StatefulWidget {
 }
 
 class _BottomNavState extends State<BottomNav> {
+  String? roleFound;
+  Map<String, dynamic>? userData;
+  bool isLoading = true;
+  List pageSelect = [];
 
   List <Widget> pagesStudent = [HomePage(), HistoryPage(), ProfilePage()];
-  List <Widget> pagesLecture = [LectureHome(), LectureHistoryPage(), LectureProfile()];
+  List <Widget> pagesLecture = [LectureHome(), LectureHistoryPage(), LectureProfilePage()];
 
   int currentpage=0;
 
   @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  // Load both profile image and other user fields from Firestore
+  Future<void> _loadUserData() async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user == null) return;
+  Map<String, dynamic>? data;
+
+  try {
+    final collections = ['students', 'lecturers'];
+
+    // Try fetching from each collection
+    for (String col in collections) {
+      final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
+      if (doc.exists) {
+        data = doc.data();
+        roleFound = col;
+        break; // Stop once we find the document
+      }
+    }
+
+    if (data != null) {
+      setState(() {
+        userData = data;
+        userData!['role'] = roleFound; // store the role as well
+        print(roleFound);
+        isLoading = false;
+      });
+    } else {
+      print("User document not found in any collection!");
+      setState(() => isLoading = false);
+    }
+  } catch (e) {
+    print("Error loading user data: $e");
+    setState(() => isLoading = false);
+  }
+
+  if (roleFound == 'students') {
+    setState(() {
+      pageSelect = pagesStudent;
+    });
+  }
+  if (roleFound == 'lecturers') {
+    setState(() {
+      pageSelect = pagesLecture;
+    });
+  }
+}
+
+  @override
   Widget build(BuildContext context) {
+    if (isLoading || pageSelect.isEmpty) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -37,7 +102,7 @@ class _BottomNavState extends State<BottomNav> {
         ),
       ),
 
-      body: pagesLecture[currentpage],
+      body: pageSelect[currentpage],
 
 
       bottomNavigationBar: BottomNavigationBar(
@@ -45,7 +110,6 @@ class _BottomNavState extends State<BottomNav> {
         onTap: (value) {
           setState(() {
             currentpage = value;
-            
           });
         },
         items: const [

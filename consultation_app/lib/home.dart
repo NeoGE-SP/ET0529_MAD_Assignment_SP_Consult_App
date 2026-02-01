@@ -36,18 +36,24 @@ class _HomeState extends State<Home> {
         final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
         if (doc.exists) {
           data = doc.data();
+          print(data);
           roleFound = col;
           break; // Stop once we find the document
         }
-        if (data != null) {
-          setState(() {
-            userData = data;
-            userData!['role'] = roleFound; // store the role as well
-            print(roleFound);
-            isLoading = false;
-          });
-        } 
-    }} catch (e) {
+      }
+
+      if (data != null) {
+        setState(() {
+          userData = data;
+          userData!['role'] = roleFound; // store the role as well
+          print(roleFound);
+          print(userData!['fcmTokens']);
+          print(userData!['email']);
+          print(userData!['class']);
+          isLoading = false;
+        });
+      } 
+    } catch (e) {
       print("Error loading user data: $e");
       setState(() => isLoading = false);
     }
@@ -59,17 +65,14 @@ class _HomeState extends State<Home> {
       });
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
-      NotificationService notificationService = NotificationService();
-      String fcmToken = await notificationService.getFcmToken();
 
-
-      final url = Uri.parse('https://triaryl-thi-unobliged.ngrok-free.dev/getnotif');
+      final url = Uri.parse('https://triaryl-thi-unobliged.ngrok-free.dev/requestnotif');
 
       await http.post(
         url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          'token': fcmToken,
+          'token': userData!['fcmTokens'],
           'docID': user.uid,
           'role': roleFound.toString(),
         })

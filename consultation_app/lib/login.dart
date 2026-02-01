@@ -68,7 +68,7 @@ class _LoginState extends State<Login> {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         final userDocRef = FirebaseFirestore.instance
-          .collection('students') // or 'lecturers', or dynamically based on role
+          .collection(role) // or 'lecturers', or dynamically based on role
           .doc(user.uid);
 
         await userDocRef.set({
@@ -93,21 +93,22 @@ class _LoginState extends State<Login> {
 
   @override
   void initState() {
-  super.initState();
+    super.initState();
 
-  NotificationService notificationService = NotificationService();
-  notificationService.requestNotificationPermission();
-  notificationService.getFcmToken();
+    NotificationService notificationService = NotificationService();
+    notificationService.requestNotificationPermission();
+    notificationService.getFcmToken();
 
-  FirebaseAuth.instance.authStateChanges().listen((user) {
-    if (user != null) {
-      // Safe navigation
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        Navigator.pushReplacementNamed(context, '/homepage');
-      });
+    FirebaseAuth.instance.authStateChanges().listen((user) {
+      if (user != null) {
+        // Safe navigation
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          Navigator.pushReplacementNamed(context, '/HomePage');
+        });
+      }
     }
-  });
+  );
 }
 
   @override
