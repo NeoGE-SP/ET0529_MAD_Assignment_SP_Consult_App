@@ -16,6 +16,9 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
   List<consults> pending = [];
   List<consults> overall = [];
 
+  final TextEditingController rejectReason = new TextEditingController();
+  final TextEditingController location = new TextEditingController();
+
   @override
   void initState() {
     super.initState();
@@ -69,6 +72,21 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
 
     // ✅ Data exists
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        centerTitle: true,
+        title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pushNamed(context, '/bottomNav'),
+        ),
+        shape: Border(
+          bottom: BorderSide(
+            color: const Color.fromARGB(255, 195, 195, 195),
+            width: 2,
+          ),
+        ),
+      ),
       backgroundColor: Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -263,14 +281,64 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                   style: FilledButton.styleFrom(
                                       backgroundColor: Colors.white),
                                   onPressed: () {
-                                    if(consult.location == 'online'){
-                                      //generate pop-up dialog box to put in link
-                                    } else {
-                                      //generate pop-up dialog box to put in location
-                                    }
-                                    //cannot proceed if empty
+                                                                        showDialog(context: context, 
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        backgroundColor: Colors.white,
+                                        title: const Text('Confirm', style: TextStyle(fontSize: 20),),
+                                        content: const Text('Enter location/link to consult', style: 
+                                        TextStyle(fontSize: 16),),
 
-                                    //change status from 'pending' to 'scheduled'
+
+                                        actions: [
+                                          Column(children: [
+                                            TextField(
+                                              controller: location,
+                                              decoration: const InputDecoration(
+                                                labelText: 'Location/Meeting Link',
+                                                border: OutlineInputBorder()),
+
+                                            ),
+
+                                            SizedBox(height: 20,),
+                                            
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              children: [
+                                              MaterialButton(child: const Text('Confirm'), onPressed: (){
+                                                if (location.text.trim().isEmpty){
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                  const SnackBar(
+                                                    backgroundColor: Colors.red,
+                                                    content: Text(
+                                                        'Please enter location before proceeding.'),
+                                                    )
+                                                  );
+                                                }
+                                                else {
+                                                  Navigator.of(context).pop();
+
+                                                  //send notification, UPDATE status to SCHEDULED
+
+
+                                                }
+                                              }), 
+
+                                              MaterialButton(child: const Text('Cancel'), onPressed: (){
+                                                Navigator.of(context).pop();
+                                              })
+
+                                            ],)
+                                            
+                                          ],)
+                                                                                  
+                                        ],
+
+
+                                      );
+                                    }
+                                    );
+
                                   },
                                   child: const Text(
                                     'Accpet',
@@ -287,11 +355,49 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                   style: FilledButton.styleFrom(
                                       backgroundColor: Colors.white),
                                   onPressed: () {
-                                    // add pop-up dialog for lecturer to add in rejection reason: OPTIONAL
+                                    showDialog(context: context, 
+                                    builder: (context) {
+                                      return AlertDialog(
+                                        backgroundColor: Colors.white,
+                                        title: const Text('Confirm', style: TextStyle(fontSize: 20),),
+                                        content: const Text('Add a Reason for Rejection (Optional)', style: 
+                                        TextStyle(fontSize: 16),),
 
-                                    //send notification to student to reschedule
 
-                                    //consult will remain, will reflect new timing when updated
+                                        actions: [
+                                          Column(children: [
+                                            TextField(
+                                              controller: rejectReason,
+                                              decoration: const InputDecoration(
+                                                labelText: 'Reason (Optional)',
+                                                border: OutlineInputBorder()),
+
+                                            ),
+
+                                            SizedBox(height: 20,),
+                                            
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.start,
+                                              children: [
+                                              MaterialButton(child: const Text('Confirm'), onPressed: (){
+                                                Navigator.of(context).pop();
+                                                //send notification to student to reschedule
+                                              }), 
+
+                                              MaterialButton(child: const Text('Cancel'), onPressed: (){
+                                                Navigator.of(context).pop();
+                                              })
+
+                                            ],)
+                                            
+                                          ],)
+                                                                                  
+                                        ],
+
+
+                                      );
+                                    }
+                                    );
                                   },
                                   child: const Text(
                                     'Reject',
