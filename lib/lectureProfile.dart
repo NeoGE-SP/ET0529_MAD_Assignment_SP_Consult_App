@@ -18,7 +18,7 @@ class _LectureProfileState extends State<LectureProfile> {
   }
 
   Future<void> loadProfile() async {
-    await lectureProfile_Service.getAllLecturers();
+    await LectureProfileService.getAllLecturers();
     setState(() {
       isLoading = false;
     });
@@ -34,7 +34,7 @@ class _LectureProfileState extends State<LectureProfile> {
     }
 
     // 📭 Empty state
-    if (lectureProfile_Service.z.isEmpty) {
+    if (LectureProfileService.lecturers.isEmpty) {
       return const Scaffold(
         body: Center(
           child: Text(
@@ -46,7 +46,7 @@ class _LectureProfileState extends State<LectureProfile> {
     }
 
     // ✅ SAFE: data exists
-    final lecturer = lectureProfile_Service.z[0];
+    final lecturer = LectureProfileService.lecturers[0];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -97,7 +97,7 @@ class _LectureProfileState extends State<LectureProfile> {
               child: Column(
                 children: [
                   _infoRow(Icons.person, 'Name', lecturer.name),
-                  _infoRow(Icons.badge, 'Adm. No.', lecturer.staffID),
+                  _infoRow(Icons.badge, 'Staff ID', lecturer.staffID),
                   _infoRow(Icons.email, 'Email', lecturer.email),
 
                   const SizedBox(height: 20),

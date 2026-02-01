@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'data.dart'; // Make sure this points to your service file
 
 class Newconsult2 extends StatefulWidget {
   const Newconsult2({super.key});
@@ -11,130 +12,172 @@ class _Newconsult2State extends State<Newconsult2> {
   DateTime _focusedMonth = DateTime(2026, 01);
   DateTime? _selectedDate;
   String? _selectedTime;
+  List<String> _availableTimeslots = [];
+
+
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLecturers();
+  }
+
+  Future<void> _loadLecturers() async {
+    await LectureProfileService.getAllLecturers();
+    setState(() {}); // refresh UI after loading
+  }
+
+
+
+  void _updateTimeslotsForDate(DateTime date) {
+    final lecturer = LectureProfileService.lecturers[0]; 
+    _selectedTime = null; // reset selected time
+
+    _availableTimeslots = [];
+    _selectedDate = date;
+    String dateInfo = _selectedDate!.toIso8601String().split('T')[0];
+                  
+
+    if (LectureProfileService.lecturers.isNotEmpty) {
+      final lecturer = LectureProfileService.lecturers[0]; 
+
+      print(lecturer.availability[0]);
+      print(dateInfo);
+      for(int i=0; i<lecturer.availability.length;i++){
+          if (dateInfo == lecturer.availability[i].date){
+            _availableTimeslots = lecturer.availability[i].timeslots.split(',');
+            print(lecturer.availability[i].timeslots.split(','));
+        }
+      }
+
+      setState(() {
+        _availableTimeslots;
+        print(_availableTimeslots);
+      });
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: IconButton(icon: Icon(Icons.arrow_back), onPressed: () => Navigator.pushNamed(context, '/newConsult1'),),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pushNamed(context, '/newConsult1'),
+        ),
         backgroundColor: Colors.white,
         centerTitle: true,
-        title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
-        shape: Border(
+        title: Image.asset(
+          'assets/img/sp_logo.png',
+          height: 40,
+          fit: BoxFit.contain,
+        ),
+        shape: const Border(
           bottom: BorderSide(
-            color: const Color.fromARGB(255, 195, 195, 195),
+            color: Color.fromARGB(255, 195, 195, 195),
             width: 2,
           ),
         ),
       ),
       body: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'New Consultation',
-                style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              _CalendarCard(
-                month: _focusedMonth,
-                selectedDate: _selectedDate,
-                onPrev: () {
-                  setState(() {
-                    _focusedMonth = DateTime(
-                      _focusedMonth.year,
-                      _focusedMonth.month - 1,
-                    );
-                  });
-                },
-                onNext: () {
-                  setState(() {
-                    _focusedMonth = DateTime(
-                      _focusedMonth.year,
-                      _focusedMonth.month + 1,
-                    );
-                  });
-                },
-                onSelectDate: (date) {
-                  setState(() {
-                    _selectedDate = date;
-                  });
-                },
-              ),
-              const SizedBox(height: 24),
-              Wrap(
-                spacing: 16,
-                runSpacing: 12,
-                children: [
-                  _TimeSlotButton(
-                    label: '08:00 - 09:00',
-                    selected: _selectedTime == '08:00 - 09:00',
-                    onTap: () {
-                      setState(() {
-                        _selectedTime = '08:00 - 09:00';
-                      });
-                    },
-                  ),
-                  _TimeSlotButton(
-                    label: '13:00 - 14:00',
-                    selected: _selectedTime == '13:00 - 14:00',
-                    onTap: () {
-                      setState(() {
-                        _selectedTime = '13:00 - 14:00';
-                      });
-                    },
-                  ),
-                  _TimeSlotButton(
-                    label: '14:00 - 15:00',
-                    selected: _selectedTime == '14:00 - 15:00',
-                    onTap: () {
-                      setState(() {
-                        _selectedTime = '14:00 - 15:00';
-                      });
-                    },
-                  ),
-                  const _TimeSlotButton(
-                    label: '15:00 - 16:00',
-                    selected: false,
-                    disabled: true,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-              Center(
-                child: SizedBox(
-                  width: 240,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFE0443E),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(24),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'New Consultation',
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            _CalendarCard(
+              month: _focusedMonth,
+              selectedDate: _selectedDate,
+              onPrev: () {
+                setState(() {
+                  _focusedMonth =
+                      DateTime(_focusedMonth.year, _focusedMonth.month - 1);
+                });
+              },
+              onNext: () {
+                setState(() {
+                  _focusedMonth =
+                      DateTime(_focusedMonth.year, _focusedMonth.month + 1);
+                });
+              },
+              onSelectDate: (date) {
+                setState(() {
+                  //print(dateInfo);
+                  
+
+                  _updateTimeslotsForDate(date);
+
+                });
+              },
+            ),
+            const SizedBox(height: 24),
+            Wrap(
+              spacing: 16,
+              runSpacing: 12,
+              children: _availableTimeslots.isEmpty
+                  ? [
+                      const Text(
+                        'No available timeslots for this date.',
+                        style: TextStyle(color: Colors.red),
                       ),
+                    ]
+                  : _availableTimeslots
+                      .map(
+                        (slot) => _TimeSlotButton(
+                          label: slot,
+                          selected: _selectedTime == slot,
+                          onTap: () {
+                            setState(() {
+                              _selectedTime = slot;
+                            });
+                          },
+                        ),
+                      )
+                      .toList(),
+            ),
+            const SizedBox(height: 24),
+            Center(
+              child: SizedBox(
+                width: 240,
+                height: 48,
+                child: ElevatedButton(
+                  onPressed: (_selectedDate != null && _selectedTime != null)
+                      ? () {
+                          // TODO: Handle scheduling consultation
+                        }
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFE0443E),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
                     ),
-                    child: const Text(
-                      'Schedule Consultation',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                      ),
+                  ),
+                  child: const Text(
+                    'Schedule Consultation',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-            ],
-          ),
+            ),
+            const SizedBox(height: 16),
+          ],
         ),
-      );
+      ),
+    );
   }
 }
+
+// --------------------- Your Existing Widgets ---------------------
 
 class _CalendarCard extends StatelessWidget {
   const _CalendarCard({
@@ -216,8 +259,7 @@ class _CalendarCard extends StatelessWidget {
             spacing: 0,
             runSpacing: 4,
             children: [
-              for (int i = 0; i < leadingEmpty; i++)
-                const _DayCell.empty(),
+              for (int i = 0; i < leadingEmpty; i++) const _DayCell.empty(),
               for (int day = 1; day <= daysInMonth; day++)
                 _DayCell(
                   day: day,
@@ -228,8 +270,7 @@ class _CalendarCard extends StatelessWidget {
                   onTap: () =>
                       onSelectDate(DateTime(month.year, month.month, day)),
                 ),
-              for (int i = 0; i < trailingEmpty; i++)
-                const _DayCell.empty(),
+              for (int i = 0; i < trailingEmpty; i++) const _DayCell.empty(),
             ],
           ),
         ],
@@ -302,9 +343,7 @@ class _DayCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (day == null) {
-      return const SizedBox(width: 44, height: 36);
-    }
+    if (day == null) return const SizedBox(width: 44, height: 36);
 
     return SizedBox(
       width: 44,

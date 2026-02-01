@@ -68,43 +68,76 @@ class studentProfile_Service {
 }
 
 
+class Availability {
+  String date, timeslots;
 
-class lectureProfile {
-  String staffID, email, name;
+  Availability(this.date, this.timeslots);
 
-  lectureProfile(this.staffID, this.email, this.name);
+  @override
+  String toString() => 'Availability(date: $date, timeslots: $timeslots)';
 }
 
-class lectureProfile_Service {
+class LectureInfo {
+  String staffID;
+  String name;
+  String email;
+  List<Availability> availability;
 
+  LectureInfo(this.staffID, this.name, this.email, this.availability);
 
-  static List<lectureProfile> z = [];
+  @override
+  String toString() =>
+      'LectureInfo(staffID: $staffID, name: $name, email: $email, availability: $availability)';
+}
+
+class LectureProfileService {
+  static List<LectureInfo> lecturers = [];
 
   static CollectionReference lectureData =
       FirebaseFirestore.instance.collection('lecturers');
 
   static Future<void> getAllLecturers() async {
-    z.clear();
+    lecturers.clear();
 
+    print('Fetching lecturers from Firebase...');
     QuerySnapshot qs = await lectureData.get();
 
     for (var doc in qs.docs) {
-      final lectureInfo = doc.data() as Map<String, dynamic>;
+      final data = doc.data() as Map<String, dynamic>?;
 
-      z.add(
-        lectureProfile(
-          lectureInfo['adm'],
-          lectureInfo['name'],
-          lectureInfo['email'],
-        ),
-      );
+      if (data == null) continue; // skip empty docs
+      print('Raw doc data: $data');
+
+      final staffID = data['adm']?.toString() ?? '';
+      final name = data['name']?.toString() ?? '';
+      final email = data['email']?.toString() ?? '';
+
+      final List<Availability> availList =
+          (data['availability'] as List<dynamic>?)
+                  ?.map((a) {
+                    final map = a as Map<String, dynamic>? ?? {};
+                    final date = map['date']?.toString() ?? '';
+                    final timeslots = map['timeslots']?.toString() ?? '';
+                    return Availability(date, timeslots);
+                  })
+                  .where((a) => a.date.isNotEmpty && a.timeslots.isNotEmpty)
+                  .toList() ??
+              [];
+
+      final lecture = LectureInfo(staffID, name, email, availList);
+      lecturers.add(lecture);
+
+      print('Parsed LectureInfo: $lecture');
     }
+
+    print('Total lecturers fetched: ${lecturers.length}');
   }
 
-  static lectureProfile getProfileAt(int index) {
-    return z[index];
+  static LectureInfo getProfileAt(int index) {
+    return lecturers[index];
   }
 }
+
 
 
 class consults {
