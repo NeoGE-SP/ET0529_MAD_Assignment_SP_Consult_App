@@ -12,6 +12,9 @@ import 'package:mad_assignment_sp_consult_booking/newConsult2.dart';
 import 'package:mad_assignment_sp_consult_booking/scheduleLecture.dart';
 import 'package:mad_assignment_sp_consult_booking/scheduledConsults.dart';
 import 'package:mad_assignment_sp_consult_booking/openai_test.dart';
+import 'package:mad_assignment_sp_consult_booking/newnotes.dart';
+import 'package:mad_assignment_sp_consult_booking/notes.dart';
+
 
 // Background message handler
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -54,6 +57,8 @@ void main() async {
       "/login": (context) => const Login(),
       "/HomePage": (context) => BottomNav(),
       "/newConsult1": (context) => const Newconsult1(),
+      "/notes": (context) => const ConsultationNotesPage(),
+      "/newNotes": (context) => const NewNotesPage(),
       "/newConsult2": (context) => const Newconsult2(),
       "/scheduleStudent": (context) => const ConfirmStudent(),
       "/scheduleLecture": (context) => const ConfirmLecture(),
