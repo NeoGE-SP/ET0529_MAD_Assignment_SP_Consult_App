@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mad_assignment_sp_consult_booking/data.dart';
+import 'package:mad_assignment_sp_consult_booking/newnotes.dart';
 
 class ConfirmStudent extends StatefulWidget {
   const ConfirmStudent({super.key});
@@ -179,7 +180,11 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                               style: FilledButton.styleFrom(
                                   backgroundColor: Colors.white),
                               onPressed: () {
-                                // TODO: Show consultation notes
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => const NewNotesPage(),
+                                  ),
+                                );
                               },
                               child: const Text(
                                 'Consultation Notes',
