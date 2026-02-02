@@ -74,6 +74,10 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
         backgroundColor: Colors.white,
         centerTitle: true,
         title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pushNamed(context, '/bottomNav'),
+        ),
         shape: Border(
           bottom: BorderSide(
             color: const Color.fromARGB(255, 195, 195, 195),
@@ -279,7 +283,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                                   style: FilledButton.styleFrom(
                                       backgroundColor: Colors.white),
                                   onPressed: () {
-                                    // TODO: Show consultation notes
+                                    //Delete document from firebase
                                   },
                                   child: const Text(
                                     'Cancel',
@@ -296,7 +300,8 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                                   style: FilledButton.styleFrom(
                                       backgroundColor: Colors.white),
                                   onPressed: () {
-                                    // TODO: Show consultation notes
+                                    Navigator.pushNamed(context, '/newConsult2');
+                                    //firebase func to update date ONLY
                                   },
                                   child: const Text(
                                     'Reschedule',

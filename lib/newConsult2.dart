@@ -150,6 +150,7 @@ class _Newconsult2State extends State<Newconsult2> {
                   onPressed: (_selectedDate != null && _selectedTime != null)
                       ? () {
                           // TODO: Handle scheduling consultation
+                          Navigator.pushNamed(context, '/scheduleStudent');
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
