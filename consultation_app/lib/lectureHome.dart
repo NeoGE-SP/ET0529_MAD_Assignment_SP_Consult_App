@@ -82,7 +82,7 @@ class _LectureHomeState extends State<LectureHome> {
              Expanded(
               child: InkWell(
                 onTap: () {
-                  Navigator.pushNamed(context, '/scheduleLecture');
+                  Navigator.pushReplacementNamed(context, '/scheduleLecture');
                 },
                 splashColor: Colors.black26,
                 borderRadius: BorderRadius.circular(25),
@@ -112,6 +112,7 @@ class _LectureHomeState extends State<LectureHome> {
             Expanded(
               child: InkWell(
                 onTap: () {
+                  Navigator.pushNamed(context, '/updateAvailability');
                 },
                 splashColor: Colors.black26,
                 borderRadius: BorderRadius.circular(25),

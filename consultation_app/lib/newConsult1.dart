@@ -13,6 +13,8 @@ class _Newconsult1State extends State<Newconsult1> {
   String? _selectedMode;
   String? _selectedLecturer;
 
+  final TextEditingController _preController = TextEditingController();
+
   List<String> lecturers = [];
   List<Module> modules = [];
 
@@ -62,7 +64,7 @@ class _Newconsult1State extends State<Newconsult1> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.close),
-          onPressed: () => Navigator.pushNamed(context, '/HomePage'),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/HomePage'),
         ),
         backgroundColor: Colors.white,
         centerTitle: true,
@@ -212,6 +214,7 @@ class _Newconsult1State extends State<Newconsult1> {
                     const SizedBox(height: 8),
                     TextField(
                       maxLines: 5,
+                      controller: _preController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -240,7 +243,12 @@ class _Newconsult1State extends State<Newconsult1> {
                               );
                               return;
                             }
-                            Navigator.pushNamed(context, '/newConsult2', arguments: {'selectedLecturer': _selectedLecturer.toString(), 'selectedModule': _selectedModule.toString(), 'selectedMode': _selectedMode.toString()});
+                            if (_preController.text.trim().isNotEmpty) {
+                              print(_preController.text);
+                              Navigator.pushNamed(context, '/newConsult2', arguments: {'student_notes': _preController.text, 'selectedLecturer': _selectedLecturer.toString(), 'selectedModule': _selectedModule.toString(), 'selectedMode': _selectedMode.toString()});
+                            } else {
+                              Navigator.pushNamed(context, '/newConsult2', arguments: {'student_notes': "", 'selectedLecturer': _selectedLecturer.toString(), 'selectedModule': _selectedModule.toString(), 'selectedMode': _selectedMode.toString()});
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFE0443E),

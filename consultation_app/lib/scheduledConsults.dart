@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mad_assignment_sp_consult_booking/data.dart';
+import 'package:add_2_calendar/add_2_calendar.dart';
 
 class ConfirmStudent extends StatefulWidget {
   const ConfirmStudent({super.key});
@@ -91,6 +92,27 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
     });
   }
 
+  Future<void> markCalendar(String location, String timeslot, String module, String student, String date, String lecturer) async {
+      
+      final times = timeslot.split('-');
+      final startTime = DateTime.parse("$date ${times[0]}:00");
+      final endTime = DateTime.parse("$date ${times[1]}:00");
+      final title = "$module consultation with $lecturer";
+
+      final Event event = Event(
+        title: title,
+        description: 'Consultation with Lecturer',
+        location: 'Singapore Polytechnic, $location',
+        startDate: startTime,
+        endDate: endTime,
+        iosParams: IOSParams(
+          reminder: Duration(minutes: 30), 
+        ),
+      );
+
+      Add2Calendar.addEvent2Cal(event);
+  }
+
   Future<void> cancelConsult(int code) async {
     final query = await FirebaseFirestore.instance
           .collection('consults')
@@ -152,7 +174,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
         title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamed(context, '/HomePage'),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/HomePage'),
         ),
         shape: Border(
           bottom: BorderSide(
@@ -179,7 +201,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
         title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamed(context, '/HomePage'),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/HomePage'),
         ),
         shape: Border(
           bottom: BorderSide(
@@ -295,18 +317,37 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                           ),
                           const SizedBox(height: 12),
                           Center(
-                            child: FilledButton(
-                              style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.white),
-                              onPressed: () {
-                                // TODO: Show consultation notes
-                              },
-                              child: const Text(
-                                'Consultation Notes',
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold),
-                              ),
+                            child: Row(
+                              children: [
+                                FilledButton(
+                                style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.white),
+                                onPressed: () {
+                                  Navigator.pushNamed(context, '/newNotes', arguments: {'role': 'students', 'c_code': consult.code, 'name': consult.student, 'notes': consult.studentNotes});
+                                },
+                                child: const Text(
+                                  'Consultation Notes',
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                SizedBox(width: 20,),
+                                FilledButton(
+                                style: FilledButton.styleFrom(
+                                    backgroundColor: Colors.blue),
+                                onPressed: () {
+                                  markCalendar(consult.location, consult.timeslot, consult.mod, consult.student, consult.date, consult.lecturer);
+                                },
+                                child: const Text(
+                                  'Add to Calendar',
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              
+                              ]
                             ),
                           ),
                         ],
@@ -383,7 +424,10 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                                         const Text('Reason',
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold)),
-                                      Text(consult.reason.toString()),
+                                      Container(
+                                        width: 110,
+                                        child: Text(consult.reason.toString()),
+                                      ),
                                       const SizedBox(height: 8,),
                                       const Text("_____")
                                       ],)
@@ -568,7 +612,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                                       backgroundColor: Colors.white),
                                   onPressed: () async {
                                     await getId(consult.code);
-                                    Navigator.pushNamed(context, '/reschedConsult', arguments: {'docID': specDocID, 'selectedLecturer' : consult.lecturer.toString()});
+                                    Navigator.pushReplacementNamed(context, '/reschedConsult', arguments: {'docID': specDocID, 'selectedLecturer' : consult.lecturer.toString()});
                                     //firebase func to update date ONLY
                                   },
                                   child: const Text(

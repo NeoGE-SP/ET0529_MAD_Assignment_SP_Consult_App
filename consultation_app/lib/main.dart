@@ -3,17 +3,18 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:mad_assignment_sp_consult_booking/bottomNav.dart';
 import 'package:mad_assignment_sp_consult_booking/home.dart';
-import 'package:mad_assignment_sp_consult_booking/openai_test.dart';
 import 'package:mad_assignment_sp_consult_booking/rescheduleConsult.dart';
+import 'package:mad_assignment_sp_consult_booking/updateAvailability.dart';
 import 'firebase_options.dart';
 import 'package:mad_assignment_sp_consult_booking/login.dart';
 import 'package:mad_assignment_sp_consult_booking/newConsult1.dart';
 import 'package:mad_assignment_sp_consult_booking/newConsult2.dart';
 import 'package:mad_assignment_sp_consult_booking/scheduleLecture.dart';
 import 'package:mad_assignment_sp_consult_booking/scheduledConsults.dart';
-import 'package:mad_assignment_sp_consult_booking/openai_test.dart';
+import 'package:mad_assignment_sp_consult_booking/ai_summary.dart';
 import 'package:mad_assignment_sp_consult_booking/newnotes.dart';
 import 'package:mad_assignment_sp_consult_booking/notes.dart';
+import 'package:mad_assignment_sp_consult_booking/reload.dart';
 
 
 // Background message handler
@@ -57,12 +58,15 @@ void main() async {
       "/login": (context) => const Login(),
       "/HomePage": (context) => BottomNav(),
       "/newConsult1": (context) => const Newconsult1(),
-      "/notes": (context) => const ConsultationNotesPage(),
+      "/notes": (context) => const NotesPage(),
       "/newNotes": (context) => const NewNotesPage(),
       "/newConsult2": (context) => const Newconsult2(),
       "/scheduleStudent": (context) => const ConfirmStudent(),
       "/scheduleLecture": (context) => const ConfirmLecture(),
       '/reschedConsult' : (context) => const Rescheduleconsult(),
+      '/reload' : (context) => const Reload(),
+      '/updateAvailability' : (context) => const UpdateAvailabilityPage(),
+      '/aisummary' : (context) => const NoteSummarizer(),
     },
   ));
 }

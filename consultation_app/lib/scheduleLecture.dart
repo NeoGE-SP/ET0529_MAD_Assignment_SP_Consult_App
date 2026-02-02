@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mad_assignment_sp_consult_booking/data.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:add_2_calendar/add_2_calendar.dart';
 
 class ConfirmLecture extends StatefulWidget {
   const ConfirmLecture({super.key});
@@ -106,6 +107,23 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
     print("got id");
   }
 
+  Future<void> completeConsult(int code) async {
+    final query = await FirebaseFirestore.instance
+          .collection('consults')
+          .where('consult_code', isEqualTo: code)
+          .limit(1)
+          .get();
+
+    if (query.docs.isEmpty) {
+      throw Exception('Consult not found for code: $code');
+    }
+
+    await query.docs.first.reference.update({
+      'status': 'completed',
+    });
+  }
+
+
   Future<void> sendRejection(String documentID, String chosenStudent, int code) async {
       final query = await FirebaseFirestore.instance
             .collection('students')
@@ -143,6 +161,130 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
       print("Rejection Complete");
   }
 
+  Future<void> sendAccept(String documentID, String chosenStudent, int code, String location, String timeslot, String module, String student, String date, String lecturer) async {
+      final query = await FirebaseFirestore.instance
+            .collection('students')
+            .where('name', isEqualTo: chosenStudent)
+            .limit(1)
+            .get();
+
+      final url = Uri.parse('https://triaryl-thi-unobliged.ngrok-free.dev/acceptnotif');
+
+      final data = query.docs.first.data();
+      final id = query.docs.first.id;
+
+      await http.post(
+          url,
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({
+            'token': data['fcmTokens'],
+            'docID': id,
+            'role': 'students',
+          })
+        );
+
+      await FirebaseFirestore.instance
+        .collection('consults')
+        .doc(documentID)
+        .update({
+          'status': "scheduled",
+          'location': location,
+      });
+
+      final lecturerUid = FirebaseAuth.instance.currentUser?.uid;
+      if (lecturerUid != null) {
+        final lecturerDocRef =
+            FirebaseFirestore.instance.collection('lecturers').doc(lecturerUid);
+        final lecturerDoc = await lecturerDocRef.get();
+        if (lecturerDoc.exists) {
+          List<dynamic> availability = lecturerDoc.data()?['availability'] ?? [];
+
+          final dateStr = date;
+          int index = availability.indexWhere((day) => day['date'] == dateStr);
+
+          if (index >= 0) {
+            List<String> timeslots = List<String>.from(availability[index]['timeslots'] ?? []);
+            timeslots.remove(timeslot); 
+            availability[index]['timeslots'] = timeslots;
+          }
+
+          await lecturerDocRef.update({'availability': availability});
+          print("Timeslot removed from lecturer availability");
+        }
+      }
+
+
+      setState(() {
+        print("Scheduled Complete");
+      });
+
+      final pendingQuery = await FirebaseFirestore.instance
+          .collection('consults')
+          .where('status', isEqualTo: 'pending')
+          .get();
+
+      // Filter in Dart
+      final conflicts = pendingQuery.docs.where((docSnap) {
+        final data = docSnap.data();
+        return data['lecturers'] == userData?['name'] &&
+              data['date'] == date &&
+              data['timeslot'] == timeslot &&
+              docSnap.id != documentID;
+      }).toList();
+
+      List<int> rejectedCodes = [];
+      for (var docSnap in conflicts) {
+        await docSnap.reference.update({'status': 'rejected', 'rej_reason': 'Timeslot already booked'});
+        rejectedCodes.add(docSnap.data()['consult_code']);
+
+        final studentDataQuery = await FirebaseFirestore.instance
+            .collection('students')
+            .where('name', isEqualTo: docSnap.data()['student'])
+            .limit(1)
+            .get();
+
+        if (studentDataQuery.docs.isNotEmpty) {
+          final studentData = studentDataQuery.docs.first.data();
+          final notifUrl = Uri.parse('https://triaryl-thi-unobliged.ngrok-free.dev/rejectnotif');
+          await http.post(
+            notifUrl,
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode({
+              'token': studentData['fcmTokens'],
+              'docID': studentDataQuery.docs.first.id,
+              'role': 'students',
+            }),
+          );
+        }
+      }
+
+      setState(() {
+        print("Conflicting consults rejected");
+      });
+
+      final times = timeslot.split('-');
+      final startTime = DateTime.parse("$date ${times[0]}:00");
+      final endTime = DateTime.parse("$date ${times[1]}:00");
+      final title = "$module consultation with $student";
+
+      final Event event = Event(
+        title: title,
+        description: 'Consultation with Lecturer',
+        location: 'Singapore Polytechnic, $location',
+        startDate: startTime,
+        endDate: endTime,
+        iosParams: IOSParams(
+          reminder: Duration(minutes: 30), 
+        ),
+      );
+
+      Add2Calendar.addEvent2Cal(event);
+
+      if (!mounted) return;
+
+      Navigator.pushReplacementNamed(context, '/reload');
+  }
+
   @override
   Widget build(BuildContext context) {
     // 🔄 Loading state
@@ -161,7 +303,7 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
         title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamed(context, '/HomePage'),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/HomePage'),
         ),
         shape: Border(
           bottom: BorderSide(
@@ -187,7 +329,7 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
         title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamed(context, '/HomePage'),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/HomePage'),
         ),
         shape: Border(
           bottom: BorderSide(
@@ -304,19 +446,38 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                           ),
                           const SizedBox(height: 12),
                           Center(
-                            child: FilledButton(
-                              style: FilledButton.styleFrom(
-                                  backgroundColor: Colors.white),
-                              onPressed: () {
-                                // TODO: Show consultation notes
-                              },
-                              child: const Text(
-                                'Consultation Notes',
-                                style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold),
-                              ),
-                            ),
+                            child: Row(
+                              children: [
+                                FilledButton(
+                                  style: FilledButton.styleFrom(
+                                      backgroundColor: Colors.white),
+                                  onPressed: () {
+                                    Navigator.pushNamed(context, '/newNotes', arguments: {'role': 'lecturers', 'c_code': consult.code, 'name': consult.lecturer, 'notes': consult.lectureNotes});
+                                  },
+                                  child: const Text(
+                                    'Consultation Notes',
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                const SizedBox(width: 40,),
+                                FilledButton(
+                                  style: FilledButton.styleFrom(
+                                      backgroundColor: Colors.green),
+                                  onPressed: () async {
+                                    await completeConsult(consult.code);
+                                    Navigator.pushNamed(context, '/reload');
+                                  },
+                                  child: const Text(
+                                    'Complete',
+                                    style: TextStyle(
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            )
                           ),
                         ],
                       ),
@@ -505,7 +666,7 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                   style: FilledButton.styleFrom(
                                       backgroundColor: Colors.white),
                                   onPressed: () {
-                                                                        showDialog(context: context, 
+                                    showDialog(context: context, 
                                     builder: (context) {
                                       return AlertDialog(
                                         backgroundColor: Colors.white,
@@ -521,7 +682,6 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                               decoration: const InputDecoration(
                                                 labelText: 'Location/Meeting Link',
                                                 border: OutlineInputBorder()),
-
                                             ),
 
                                             SizedBox(height: 20,),
@@ -529,7 +689,7 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                             Row(
                                               mainAxisAlignment: MainAxisAlignment.start,
                                               children: [
-                                              MaterialButton(child: const Text('Confirm'), onPressed: (){
+                                              MaterialButton(child: const Text('Confirm'), onPressed: () async {
                                                 if (location.text.trim().isEmpty){
                                                   ScaffoldMessenger.of(context).showSnackBar(
                                                   const SnackBar(
@@ -541,10 +701,8 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                                 }
                                                 else {
                                                   Navigator.of(context).pop();
-
-                                                  //send notification, UPDATE status to SCHEDULED
-
-
+                                                  await getId(consult.code);
+                                                  sendAccept(specDocID.toString(), consult.student.toString(), consult.code, location.text, consult.timeslot, consult.mod, consult.student, consult.date, consult.lecturer);
                                                 }
                                               }), 
 

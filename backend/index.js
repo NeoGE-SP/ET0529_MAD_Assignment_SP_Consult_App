@@ -12,13 +12,6 @@ admin.initializeApp({
 const db = admin.firestore();
 
 
-app.post("/getnotif", async (req, res) => {
-  const { token, docID, role } = req.body;
-
-  sendNotificationToToken(token, docID, role);
-  res.status(200).send({ success: true });
-});
-
 
 app.post("/requestnotif", async (req, res) => {
   const { token, docID, role } = req.body;
@@ -33,6 +26,14 @@ app.post("/rejectnotif", async (req, res) => {
   console.log(token)
 
   sendRejectNotification(token, docID, role);
+  res.status(200).send({ success: true });
+});
+
+app.post("/acceptnotif", async (req, res) => {
+  const { token, docID, role } = req.body;
+  console.log(token)
+
+  sendAcceptNotification(token, docID, role);
   res.status(200).send({ success: true });
 });
 
@@ -91,6 +92,31 @@ async function sendRejectNotification(token, docID, role) {
   }
   else {
     console.log('No tokens provided (student not logged in on any device). Skipping notification, but rejection is successful.');
+  }
+}
+
+async function sendAcceptNotification(token, docID, role) {
+  const data = await getDataFromFirestore(docID, role);
+
+  if (Array.isArray(token) && token.length > 0) {
+    const message = {
+      tokens: token,
+      notification: { title: "Consultation Appointment Scheduled", body: `Your appointment request for ${data.module} with ${data.name} has been scheduled` },
+    };
+
+    const response = await admin.messaging().sendEachForMulticast(message);
+
+    console.log("Success:", response.successCount);
+    console.log("Failures:", response.failureCount);
+
+    response.responses.forEach((resp, idx) => {
+      if (!resp.success) {
+        console.error(`Token ${tokens[idx]} failed:`, resp.error);
+      }
+    });
+  }
+  else {
+    console.log('No tokens provided (student not logged in on any device). Skipping notification, but scheduling is successful.');
   }
 }
 

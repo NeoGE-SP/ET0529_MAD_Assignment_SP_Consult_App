@@ -11,7 +11,6 @@ class LectureHistoryPage extends StatefulWidget {
 }
 
 class _LectureHistoryPageState extends State<LectureHistoryPage> {
-  // ✅ Local instance variables for this page
   bool isLoading = true;
   bool _alreadyLoaded = false; // 🔹 Prevent double fetch
   List<consults> completed = [];
@@ -83,21 +82,6 @@ class _LectureHistoryPageState extends State<LectureHistoryPage> {
     // 📭 Empty state
     if (completed.isEmpty) {
       return Scaffold(
-        appBar: AppBar(
-        backgroundColor: Colors.white,
-        centerTitle: true,
-        title: Image.asset('assets/img/sp_logo.png', height: 40, fit: BoxFit.contain,),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamed(context, '/HomePage'),
-        ),
-        shape: Border(
-          bottom: BorderSide(
-            color: const Color.fromARGB(255, 195, 195, 195),
-            width: 2,
-          ),
-        ),
-      ),
         body: Center(
           child: Text(
             'No completed consultations yet',
@@ -217,7 +201,7 @@ class _LectureHistoryPageState extends State<LectureHistoryPage> {
                             style: FilledButton.styleFrom(
                                 backgroundColor: Colors.white),
                             onPressed: () {
-                              // TODO: Show consultation notes
+                              Navigator.pushReplacementNamed(context, '/notes', arguments: {'lecturer_name': consult.lecturer, 'lecturer_notes': consult.lectureNotes, 'student_name': consult.student, 'student_notes': consult.studentNotes, 'c_code': consult.code, 'role': 'lecturers'});
                             },
                             child: const Text(
                               'Consultation Notes',

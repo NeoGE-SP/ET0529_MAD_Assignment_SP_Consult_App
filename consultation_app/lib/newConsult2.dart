@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'data.dart'; // Make sure this points to your service file
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:add_2_calendar/add_2_calendar.dart';
 
 class Newconsult2 extends StatefulWidget {
   const Newconsult2({super.key});
@@ -14,7 +13,7 @@ class Newconsult2 extends StatefulWidget {
 }
 
 class _Newconsult2State extends State<Newconsult2> {
-  DateTime _focusedMonth = DateTime(2026, 01);
+  DateTime _focusedMonth = DateTime(DateTime.now().year, DateTime.now().month);
   DateTime? _selectedDate;
   String? _selectedTime;
   List<dynamic> _availableTimeslots = [];
@@ -82,9 +81,6 @@ class _Newconsult2State extends State<Newconsult2> {
 
     if (query.docs.isNotEmpty) {
       final data = query.docs.first.data();
-      print(data['availability']);
-      print(dateInfo);
-      print(data['availability'][0]['timeslots']);
       for(int i=0; i<(data['availability'] as List).length;i++){
           if (dateInfo == data['availability'][i]['date']){
             _availableTimeslots = (data['availability'][i]['timeslots']);
@@ -123,7 +119,8 @@ class _Newconsult2State extends State<Newconsult2> {
     String module,
     String date,
     String timeslot,
-    String location,) async {
+    String location,
+    String student_notes) async {
       final query = await FirebaseFirestore.instance
             .collection('lecturers')
             .where('name', isEqualTo: chosenLecturer)
@@ -161,32 +158,11 @@ class _Newconsult2State extends State<Newconsult2> {
         'rej_reason': '',
         'status': 'pending',
         'lecturer_notes': '',
-        'student_notes': '',
+        'student_notes': student_notes,
       
         'created_at': FieldValue.serverTimestamp(),
       });
       print("request sent lol");
-
-      final times = timeslot.split('-');
-      final startTime = DateTime.parse("$date ${times[0]}:00");
-      final endTime = DateTime.parse("$date ${times[1]}:00");
-      final title = "$module consultation with $student";
-
-      // 2. Create the Event object
-      final Event event = Event(
-        title: title,
-        description: 'Consultation with Lecturer',
-        location: 'Singapore Polytechnic',
-        startDate: startTime,
-        endDate: endTime,
-        iosParams: IOSParams(
-          reminder: Duration(minutes: 30), // Notification 30 mins before
-        ),
-      );
-
-      // 3. Open the native calendar
-      Add2Calendar.addEvent2Cal(event);
-      print("Added event or something");
 }
 
 
@@ -197,6 +173,7 @@ class _Newconsult2State extends State<Newconsult2> {
     String chosenLecturer = args['selectedLecturer'];
     String chosenModule = args['selectedModule'];
     String chosenMode = args['selectedMode'];
+    String student_notes = args['student_notes'];
 
 
     return Scaffold(
@@ -204,7 +181,7 @@ class _Newconsult2State extends State<Newconsult2> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pushNamed(context, '/newConsult1'),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/newConsult1'),
         ),
         backgroundColor: Colors.white,
         centerTitle: true,
@@ -288,8 +265,8 @@ class _Newconsult2State extends State<Newconsult2> {
                 child: ElevatedButton(
                   onPressed: (_selectedDate != null && _selectedTime != null)
                       ? () async {
-                          await sendRequest(chosenLecturer, userData!['name'], chosenModule, _selectedDate.toString(), _selectedTime.toString(), chosenMode);
-                          Navigator.pushNamed(context, '/scheduleStudent');
+                          await sendRequest(chosenLecturer, userData!['name'], chosenModule, _selectedDate.toString(), _selectedTime.toString(), chosenMode, student_notes);
+                          Navigator.pushReplacementNamed(context, '/scheduleStudent');
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
@@ -317,7 +294,7 @@ class _Newconsult2State extends State<Newconsult2> {
   }
 }
 
-// --------------------- Your Existing Widgets ---------------------
+// --------------------- Widgets ---------------------
 
 class _CalendarCard extends StatelessWidget {
   const _CalendarCard({
@@ -343,6 +320,9 @@ class _CalendarCard extends StatelessWidget {
     final trailingEmpty = (7 - (totalCells % 7)) % 7;
     final monthLabel = _monthLabel(month);
 
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    final today = DateTime.now();
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
@@ -359,6 +339,7 @@ class _CalendarCard extends StatelessWidget {
       ),
       child: Column(
         children: [
+          // Month header with prev/next buttons
           Row(
             children: [
               Text(
@@ -382,6 +363,7 @@ class _CalendarCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
+          // Weekday labels
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -395,11 +377,15 @@ class _CalendarCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
+          // Days grid
           Wrap(
             spacing: 0,
             runSpacing: 4,
             children: [
+              // Leading empty cells
               for (int i = 0; i < leadingEmpty; i++) const _DayCell.empty(),
+
+              // Days
               for (int day = 1; day <= daysInMonth; day++)
                 _DayCell(
                   day: day,
@@ -407,9 +393,20 @@ class _CalendarCard extends StatelessWidget {
                     selectedDate,
                     DateTime(month.year, month.month, day),
                   ),
-                  onTap: () =>
-                      onSelectDate(DateTime(month.year, month.month, day)),
+                  // Disable all days before tomorrow
+                  onTap: DateTime(month.year, month.month, day)
+                          .isBefore(DateTime(
+                        tomorrow.year,
+                        tomorrow.month,
+                        tomorrow.day,
+                      ))
+                      ? null
+                      : () => onSelectDate(
+                            DateTime(month.year, month.month, day),
+                          ),
                 ),
+
+              // Trailing empty cells
               for (int i = 0; i < trailingEmpty; i++) const _DayCell.empty(),
             ],
           ),
@@ -485,6 +482,8 @@ class _DayCell extends StatelessWidget {
   Widget build(BuildContext context) {
     if (day == null) return const SizedBox(width: 44, height: 36);
 
+    final disabled = onTap == null;
+
     return SizedBox(
       width: 44,
       height: 36,
@@ -496,7 +495,11 @@ class _DayCell extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: selected ? const Color(0xFFE0443E) : Colors.transparent,
+              color: selected
+                  ? const Color(0xFFE0443E)
+                  : disabled
+                      ? const Color(0xFFEDEDED)
+                      : Colors.transparent,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
@@ -505,7 +508,11 @@ class _DayCell extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: selected ? Colors.white : const Color(0xFF616161),
+                color: selected
+                    ? Colors.white
+                    : disabled
+                        ? const Color(0xFF9E9E9E)
+                        : const Color(0xFF616161),
               ),
             ),
           ),

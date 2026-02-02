@@ -25,12 +25,21 @@ class _BottomNavState extends State<BottomNav> {
   List <Widget> pagesStudent = [HomePage(), HistoryPage(), ProfilePage()];
   List <Widget> pagesLecture = [LectureHome(), LectureHistoryPage(), LectureProfilePage()];
 
-  int currentpage=0;
+  int currentpage = 0;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+
+    Future.microtask(() {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    if (args is int) {
+      setState(() {
+        currentpage = args;
+      });
+    }
+  });
   }
 
   // Load both profile image and other user fields from Firestore
@@ -82,6 +91,7 @@ class _BottomNavState extends State<BottomNav> {
 
   @override
   Widget build(BuildContext context) {
+
     if (isLoading || pageSelect.isEmpty) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
