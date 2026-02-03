@@ -24,7 +24,6 @@ class _HomeState extends State<Home> {
     _loadUserData();
   }
 
-  // Load both profile image and other user fields from Firestore
   Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -38,14 +37,14 @@ class _HomeState extends State<Home> {
           data = doc.data();
           print(data);
           roleFound = col;
-          break; // Stop once we find the document
+          break; 
         }
       }
 
       if (data != null) {
         setState(() {
           userData = data;
-          userData!['role'] = roleFound; // store the role as well
+          userData!['role'] = roleFound; 
           print(roleFound);
           print(userData!['fcmTokens']);
           print(userData!['email']);

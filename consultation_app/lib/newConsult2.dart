@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'data.dart'; // Make sure this points to your service file
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -27,7 +26,6 @@ class _Newconsult2State extends State<Newconsult2> {
     _loadUserData();
   }
 
-  // Load both profile image and other user fields from Firestore
   Future<void> _loadUserData() async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
@@ -36,21 +34,20 @@ class _Newconsult2State extends State<Newconsult2> {
   try {
     final collections = ['students', 'lecturers'];
 
-    // Try fetching from each collection
     for (String col in collections) {
       final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
       if (doc.exists) {
         data = doc.data();
         roleFound = col;
-        break; // Stop once we find the document
+        break; 
       }
     }
 
     if (data != null) {
       setState(() {
         userData = data;
-        userData!['role'] = roleFound; // store the role as well
-        print(roleFound);
+        userData!['role'] = roleFound; 
+        print(userData!['name']);
         isLoading = false;
       });
     } else {
@@ -66,7 +63,7 @@ class _Newconsult2State extends State<Newconsult2> {
   
 
   void _updateTimeslotsForDate(DateTime date, String chosenLecturer) async {
-    _selectedTime = null; // reset selected time
+    _selectedTime = null; 
 
     _availableTimeslots = [];
     _selectedDate = date;
@@ -104,10 +101,8 @@ class _Newconsult2State extends State<Newconsult2> {
         throw Exception("Counter document does not exist!");
       }
 
-      // Get current code and add 1
       int newCode = (snapshot.get('last_code') ?? 0) + 1;
 
-      // Update the counter in the metadata collection
       transaction.update(counterRef, {'last_code': newCode});
 
       return newCode;
@@ -130,7 +125,14 @@ class _Newconsult2State extends State<Newconsult2> {
       final url = Uri.parse('https://triaryl-thi-unobliged.ngrok-free.dev/requestnotif');
 
       final data = query.docs.first.data();
-      final id = query.docs.first.id;
+      
+      final query2 = await FirebaseFirestore.instance
+            .collection('students')
+            .where('name', isEqualTo: student)
+            .limit(1)
+            .get();
+
+      final id = query2.docs.first.id;
 
       await http.post(
           url,
@@ -138,7 +140,8 @@ class _Newconsult2State extends State<Newconsult2> {
           body: jsonEncode({
             'token': data['fcmTokens'],
             'docID': id,
-            'role': 'lecturers',
+            'role': 'students',
+            'moduleName': module,
           })
         );
       final FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -224,11 +227,7 @@ class _Newconsult2State extends State<Newconsult2> {
               },
               onSelectDate: (date) {
                 setState(() {
-                  //print(dateInfo);
-                  
-
-                  _updateTimeslotsForDate(date, chosenLecturer);
-
+                 _updateTimeslotsForDate(date, chosenLecturer);
                 });
               },
             ),
@@ -339,7 +338,6 @@ class _CalendarCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Month header with prev/next buttons
           Row(
             children: [
               Text(
@@ -363,7 +361,6 @@ class _CalendarCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          // Weekday labels
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -377,15 +374,13 @@ class _CalendarCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          // Days grid
           Wrap(
             spacing: 0,
             runSpacing: 4,
             children: [
-              // Leading empty cells
+
               for (int i = 0; i < leadingEmpty; i++) const _DayCell.empty(),
 
-              // Days
               for (int day = 1; day <= daysInMonth; day++)
                 _DayCell(
                   day: day,
@@ -393,7 +388,7 @@ class _CalendarCard extends StatelessWidget {
                     selectedDate,
                     DateTime(month.year, month.month, day),
                   ),
-                  // Disable all days before tomorrow
+
                   onTap: DateTime(month.year, month.month, day)
                           .isBefore(DateTime(
                         tomorrow.year,
@@ -406,7 +401,6 @@ class _CalendarCard extends StatelessWidget {
                           ),
                 ),
 
-              // Trailing empty cells
               for (int i = 0; i < trailingEmpty; i++) const _DayCell.empty(),
             ],
           ),

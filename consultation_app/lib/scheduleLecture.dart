@@ -14,9 +14,9 @@ class ConfirmLecture extends StatefulWidget {
 }
 
 class _ConfirmLectureState extends State<ConfirmLecture> {
-  // ✅ Local instance variables for this page
+
   bool isLoading = true;
-  bool _alreadyLoaded = false; // 🔹 Prevent double fetch
+  bool _alreadyLoaded = false; 
   List<consults> scheduled = [];
   List<consults> pending = [];
   List<consults> overall = [];
@@ -34,7 +34,7 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
   }
 
   Future<void> _loadConsultsOnce() async {
-    if (_alreadyLoaded) return; // 🔹 Prevent double call
+    if (_alreadyLoaded) return; 
     _alreadyLoaded = true;
 
     final user = FirebaseAuth.instance.currentUser;
@@ -44,20 +44,19 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
   try {
     final collections = ['students', 'lecturers'];
 
-    // Try fetching from each collection
     for (String col in collections) {
       final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
       if (doc.exists) {
         data = doc.data();
         roleFound = col;
-        break; // Stop once we find the document
+        break; 
       }
     }
 
     if (data != null) {
       setState(() {
         userData = data;
-        userData!['role'] = roleFound; // store the role as well
+        userData!['role'] = roleFound; 
         print(roleFound);
         isLoading = false;
       });
@@ -70,10 +69,8 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
     setState(() => isLoading = false);
   }
 
-    // 🔹 Call service
     await consultService.getAllConsults(roleFound.toString(), data!['name'].toString());
 
-    // 🔹 Copy completed consults to local instance variable
     setState(() {
       scheduled = List.from(consultService.scheduled);
       pending = List.from(consultService.pending);
@@ -124,7 +121,7 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
   }
 
 
-  Future<void> sendRejection(String documentID, String chosenStudent, int code) async {
+  Future<void> sendRejection(String documentID, String chosenStudent, int code, String module, String lecturer) async {
       final query = await FirebaseFirestore.instance
             .collection('students')
             .where('name', isEqualTo: chosenStudent)
@@ -143,6 +140,8 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
             'token': data['fcmTokens'],
             'docID': id,
             'role': 'students',
+            'moduleName': module,
+            'l_name': lecturer
           })
         );
 
@@ -171,7 +170,14 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
       final url = Uri.parse('https://triaryl-thi-unobliged.ngrok-free.dev/acceptnotif');
 
       final data = query.docs.first.data();
-      final id = query.docs.first.id;
+
+      final query2 = await FirebaseFirestore.instance
+            .collection('lecturers')
+            .where('name', isEqualTo: lecturer)
+            .limit(1)
+            .get();
+
+      final id = query2.docs.first.id;
 
       await http.post(
           url,
@@ -179,7 +185,8 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
           body: jsonEncode({
             'token': data['fcmTokens'],
             'docID': id,
-            'role': 'students',
+            'role': 'lecturers',
+            'moduleName': module
           })
         );
 
@@ -223,7 +230,6 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
           .where('status', isEqualTo: 'pending')
           .get();
 
-      // Filter in Dart
       final conflicts = pendingQuery.docs.where((docSnap) {
         final data = docSnap.data();
         return data['lecturers'] == userData?['name'] &&
@@ -253,6 +259,8 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
               'token': studentData['fcmTokens'],
               'docID': studentDataQuery.docs.first.id,
               'role': 'students',
+              'moduleName': docSnap.data()['module'],
+              'l_name': lecturer,
             }),
           );
         }
@@ -287,14 +295,12 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
 
   @override
   Widget build(BuildContext context) {
-    // 🔄 Loading state
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    // 📭 Empty state
     if (overall.isEmpty) {
       return Scaffold(
         appBar: AppBar(
@@ -321,7 +327,6 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
       );
     }
 
-    // ✅ Data exists
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -345,7 +350,7 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Consultation History',
+              'Requested / Scheduled Consultations',
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
@@ -362,7 +367,6 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                       padding: const EdgeInsets.all(15),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        //color: const Color.fromARGB(255, 255, 146, 146),
                         color: const Color.fromARGB(255, 255, 251, 146),
 
                       ),
@@ -764,7 +768,7 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                               MaterialButton(child: const Text('Confirm'), onPressed: () async {
                                                 Navigator.of(context).pop();
                                                 await getId(consult.code);
-                                                sendRejection(specDocID.toString(), consult.student.toString(), consult.code);
+                                                sendRejection(specDocID.toString(), consult.student.toString(), consult.code, consult.mod, consult.lecturer);
                                               }), 
 
                                               MaterialButton(child: const Text('Cancel'), onPressed: (){

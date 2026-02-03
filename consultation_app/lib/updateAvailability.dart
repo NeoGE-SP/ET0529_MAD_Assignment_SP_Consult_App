@@ -224,7 +224,6 @@ class _CalendarCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          // Month header
           Row(
             children: [
               Text(
@@ -243,7 +242,6 @@ class _CalendarCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          // Weekdays
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -257,15 +255,12 @@ class _CalendarCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          // Day grid
           Wrap(
             spacing: 4,
             runSpacing: 4,
             children: [
-              // Leading empty cells
               for (int i = 0; i < leadingEmpty; i++) const _DayCell.empty(),
 
-              // Actual days
               for (int day = 1; day <= daysInMonth; day++)
                 _DayCell(
                   day: day,
@@ -281,7 +276,6 @@ class _CalendarCard extends StatelessWidget {
                           DateTime(month.year, month.month, day)),
                 ),
 
-              // Trailing empty cells
               for (int i = 0; i < trailingEmpty; i++) const _DayCell.empty(),
             ],
           ),

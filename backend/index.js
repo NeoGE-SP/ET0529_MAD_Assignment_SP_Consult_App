@@ -14,26 +14,24 @@ const db = admin.firestore();
 
 
 app.post("/requestnotif", async (req, res) => {
-  const { token, docID, role } = req.body;
-  console.log(token)
+  const { token, docID, role , moduleName} = req.body;
 
-  sendRequestNotification(token, docID, role);
+  sendRequestNotification(token, docID, role, moduleName);
   res.status(200).send({ success: true });
 });
 
 app.post("/rejectnotif", async (req, res) => {
-  const { token, docID, role } = req.body;
-  console.log(token)
+  const { token, docID, role , moduleName, l_name} = req.body;
 
-  sendRejectNotification(token, docID, role);
+  sendRejectNotification(token, docID, role, moduleName, l_name);
   res.status(200).send({ success: true });
 });
 
 app.post("/acceptnotif", async (req, res) => {
-  const { token, docID, role } = req.body;
+  const { token, docID, role , moduleName} = req.body;
   console.log(token)
 
-  sendAcceptNotification(token, docID, role);
+  sendAcceptNotification(token, docID, role, moduleName);
   res.status(200).send({ success: true });
 });
 
@@ -45,13 +43,13 @@ async function getDataFromFirestore(docID, role) {
     return data 
 }
 
-async function sendRequestNotification(token, docID, role) {
+async function sendRequestNotification(token, docID, role, module,) {
   const data = await getDataFromFirestore(docID, role);
 
   if (Array.isArray(token) && token.length > 0) {
     const message = {
       tokens: token,
-      notification: { title: "Consultation Appointment Request", body: `${data.name} of class ${data.class} for module ${data.module} has requested a consultation` },
+      notification: { title: "Consultation Appointment Request", body: `${data.name} of class ${data.class} for module ${module} has requested a consultation` },
     };
 
     const response = await admin.messaging().sendEachForMulticast(message);
@@ -70,13 +68,13 @@ async function sendRequestNotification(token, docID, role) {
   }
 }
 
-async function sendRejectNotification(token, docID, role) {
+async function sendRejectNotification(token, docID, role, module, l_name) {
   const data = await getDataFromFirestore(docID, role);
 
   if (Array.isArray(token) && token.length > 0) {
     const message = {
       tokens: token,
-      notification: { title: "Consultation Appointment Rejection", body: `Your appointment request for ${data.module} with ${data.name} has been rejected` },
+      notification: { title: "Consultation Appointment Rejection", body: `Your appointment request for ${module} with ${l_name} has been rejected` },
     };
 
     const response = await admin.messaging().sendEachForMulticast(message);
@@ -95,13 +93,13 @@ async function sendRejectNotification(token, docID, role) {
   }
 }
 
-async function sendAcceptNotification(token, docID, role) {
+async function sendAcceptNotification(token, docID, role, module) {
   const data = await getDataFromFirestore(docID, role);
 
   if (Array.isArray(token) && token.length > 0) {
     const message = {
       tokens: token,
-      notification: { title: "Consultation Appointment Scheduled", body: `Your appointment request for ${data.module} with ${data.name} has been scheduled` },
+      notification: { title: "Consultation Appointment Scheduled", body: `Your appointment request for ${module} with ${data.name} has been scheduled` },
     };
 
     const response = await admin.messaging().sendEachForMulticast(message);

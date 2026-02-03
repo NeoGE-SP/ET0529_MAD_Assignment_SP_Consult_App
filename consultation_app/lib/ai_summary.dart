@@ -39,8 +39,6 @@ Future<String> getOpenRouterResponse(String userInput) async {
 
   if (response.statusCode == 200) {
     final data = jsonDecode(response.body);
-    // FIX: Accessing ['message']['content'] instead of ['text']
-    // Also using '??' to ensure we never return a Null type
     return data['choices'][0]['message']['content'] ?? "No summary generated.";
   } else {
     throw Exception('Failed to get response: ${response.body}');
@@ -66,8 +64,7 @@ class NoteSummarizerState extends State<NoteSummarizer> {
     super.initState();
 
     print("init state started");
-
-    // Use a post-frame callback or microtask to get arguments safely
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
 

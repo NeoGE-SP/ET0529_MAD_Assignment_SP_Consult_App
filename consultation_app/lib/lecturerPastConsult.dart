@@ -12,7 +12,7 @@ class LectureHistoryPage extends StatefulWidget {
 
 class _LectureHistoryPageState extends State<LectureHistoryPage> {
   bool isLoading = true;
-  bool _alreadyLoaded = false; // 🔹 Prevent double fetch
+  bool _alreadyLoaded = false; 
   List<consults> completed = [];
   Map<String, dynamic>? userData;
   String? roleFound;
@@ -24,7 +24,7 @@ class _LectureHistoryPageState extends State<LectureHistoryPage> {
   }
 
   Future<void> _loadConsultsOnce() async {
-    if (_alreadyLoaded) return; // 🔹 Prevent double call
+    if (_alreadyLoaded) return; 
     _alreadyLoaded = true;
 
     final user = FirebaseAuth.instance.currentUser;
@@ -34,20 +34,19 @@ class _LectureHistoryPageState extends State<LectureHistoryPage> {
   try {
     final collections = ['students', 'lecturers'];
 
-    // Try fetching from each collection
     for (String col in collections) {
       final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
       if (doc.exists) {
         data = doc.data();
         roleFound = col;
-        break; // Stop once we find the document
+        break;
       }
     }
 
     if (data != null) {
       setState(() {
         userData = data;
-        userData!['role'] = roleFound; // store the role as well
+        userData!['role'] = roleFound; 
         print(roleFound);
         isLoading = false;
       });
@@ -60,10 +59,8 @@ class _LectureHistoryPageState extends State<LectureHistoryPage> {
     setState(() => isLoading = false);
   }
 
-    // 🔹 Call service
     await consultService.getAllConsults(roleFound.toString(), data!['name'].toString());
 
-    // 🔹 Copy completed consults to local instance variable
     setState(() {
       completed = List.from(consultService.completed);
       isLoading = false;
@@ -72,14 +69,13 @@ class _LectureHistoryPageState extends State<LectureHistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 🔄 Loading state
+   
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    // 📭 Empty state
     if (completed.isEmpty) {
       return Scaffold(
         body: Center(
@@ -91,7 +87,6 @@ class _LectureHistoryPageState extends State<LectureHistoryPage> {
       );
     }
 
-    // ✅ Data exists
     return Scaffold(
       backgroundColor: Colors.white,
       body: Padding(

@@ -37,7 +37,6 @@ class _Newconsult1State extends State<Newconsult1> {
     });
   }
 
-  /// Map Firestore string to Material IconData
   IconData getIconFromString(String iconName) {
     switch (iconName) {
       case 'phone_android':
@@ -95,7 +94,6 @@ class _Newconsult1State extends State<Newconsult1> {
                     ),
                     const SizedBox(height: 18),
 
-                    /// MODULES
                     const Text(
                       'Module Name / Code',
                       style:
@@ -130,7 +128,6 @@ class _Newconsult1State extends State<Newconsult1> {
 
                     const SizedBox(height: 24),
 
-                    /// LECTURER DROPDOWN
                     const Text(
                       'Lecturer Name',
                       style:
@@ -162,7 +159,6 @@ class _Newconsult1State extends State<Newconsult1> {
 
                     const SizedBox(height: 24),
 
-                    /// MODE
                     const Text(
                       'Preferred Mode of Consultation',
                       style:
@@ -205,7 +201,6 @@ class _Newconsult1State extends State<Newconsult1> {
 
                     const SizedBox(height: 24),
 
-                    /// QUESTIONS
                     const Text(
                       'Pre-Consult Questions (Optional)',
                       style:
@@ -224,7 +219,6 @@ class _Newconsult1State extends State<Newconsult1> {
 
                     const SizedBox(height: 24),
 
-                    /// PROCEED BUTTON
                     Center(
                       child: SizedBox(
                         width: 220,
@@ -276,7 +270,6 @@ class _Newconsult1State extends State<Newconsult1> {
   }
 }
 
-/// OPTION CARD
 class _OptionCard extends StatelessWidget {
   const _OptionCard({
     required this.label,

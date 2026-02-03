@@ -42,7 +42,6 @@ class _BottomNavState extends State<BottomNav> {
   });
   }
 
-  // Load both profile image and other user fields from Firestore
   Future<void> _loadUserData() async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
@@ -51,20 +50,19 @@ class _BottomNavState extends State<BottomNav> {
   try {
     final collections = ['students', 'lecturers'];
 
-    // Try fetching from each collection
     for (String col in collections) {
       final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
       if (doc.exists) {
         data = doc.data();
         roleFound = col;
-        break; // Stop once we find the document
+        break; 
       }
     }
 
     if (data != null) {
       setState(() {
         userData = data;
-        userData!['role'] = roleFound; // store the role as well
+        userData!['role'] = roleFound;
         print(roleFound);
         isLoading = false;
       });

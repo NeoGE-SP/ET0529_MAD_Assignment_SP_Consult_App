@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mad_assignment_sp_consult_booking/notification_service.dart';
 
-
 class Login extends StatefulWidget {
   const Login({super.key});
 
@@ -68,7 +67,7 @@ class _LoginState extends State<Login> {
       final user = FirebaseAuth.instance.currentUser;
       if (user != null) {
         final userDocRef = FirebaseFirestore.instance
-          .collection(role) // or 'lecturers', or dynamically based on role
+          .collection(role) 
           .doc(user.uid);
 
         await userDocRef.set({
@@ -101,7 +100,6 @@ class _LoginState extends State<Login> {
 
     FirebaseAuth.instance.authStateChanges().listen((user) {
       if (user != null) {
-        // Safe navigation
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!mounted) return;
           Navigator.pushReplacementNamed(context, '/HomePage');

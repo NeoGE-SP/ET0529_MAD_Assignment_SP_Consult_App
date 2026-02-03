@@ -133,7 +133,7 @@ class _NotesPageState extends State<NotesPage> {
               ElevatedButton(
                 onPressed: () async {
                   await _saveNotes(consultCode: code, role: role);
-                }, //save students notes
+                }, 
                 style: ButtonStyle(
                   backgroundColor: MaterialStatePropertyAll(Colors.blue),
                 ),
@@ -199,7 +199,7 @@ class _NotesPageState extends State<NotesPage> {
               ElevatedButton(
                 onPressed: () async {
                   await _saveNotes(consultCode: code, role: role);
-                }, // save lecturers notes
+                }, 
                 style: ButtonStyle(
                   backgroundColor: MaterialStatePropertyAll(Colors.blue),
                 ),

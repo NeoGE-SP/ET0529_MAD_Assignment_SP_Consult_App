@@ -1,10 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'data.dart'; // Make sure this points to your service file
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:add_2_calendar/add_2_calendar.dart';
 
 class Rescheduleconsult extends StatefulWidget {
   const Rescheduleconsult({super.key});
@@ -14,7 +12,7 @@ class Rescheduleconsult extends StatefulWidget {
 }
 
 class _RescheduleconsultState extends State<Rescheduleconsult> {
-  DateTime _focusedMonth = DateTime(2026, 01);
+  DateTime _focusedMonth = DateTime(DateTime.now().year, DateTime.now().month);
   DateTime? _selectedDate;
   String? _selectedTime;
   List<dynamic> _availableTimeslots = [];
@@ -28,7 +26,6 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
     _loadUserData();
   }
 
-  // Load both profile image and other user fields from Firestore
   Future<void> _loadUserData() async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
@@ -37,20 +34,19 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
   try {
     final collections = ['students', 'lecturers'];
 
-    // Try fetching from each collection
     for (String col in collections) {
       final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
       if (doc.exists) {
         data = doc.data();
         roleFound = col;
-        break; // Stop once we find the document
+        break; 
       }
     }
 
     if (data != null) {
       setState(() {
         userData = data;
-        userData!['role'] = roleFound; // store the role as well
+        userData!['role'] = roleFound; 
         print(roleFound);
         isLoading = false;
       });
@@ -67,7 +63,7 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
   
 
   void _updateTimeslotsForDate(DateTime date, String chosenLecturer) async {
-    _selectedTime = null; // reset selected time
+    _selectedTime = null; 
 
     _availableTimeslots = [];
     _selectedDate = date;
@@ -108,10 +104,8 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
         throw Exception("Counter document does not exist!");
       }
 
-      // Get current code and add 1
       int newCode = (snapshot.get('last_code') ?? 0) + 1;
 
-      // Update the counter in the metadata collection
       transaction.update(counterRef, {'last_code': newCode});
 
       return newCode;
@@ -120,7 +114,8 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
 
   Future<void> sendRequest(String documentID, String chosenLecturer,
     String date,
-    String timeslot,) async {
+    String timeslot,
+    String module) async {
       final query = await FirebaseFirestore.instance
             .collection('lecturers')
             .where('name', isEqualTo: chosenLecturer)
@@ -130,7 +125,14 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
       final url = Uri.parse('https://triaryl-thi-unobliged.ngrok-free.dev/requestnotif');
 
       final data = query.docs.first.data();
-      final id = query.docs.first.id;
+      
+      final query2 = await FirebaseFirestore.instance
+            .collection('students')
+            .where('name', isEqualTo: userData!['name'])
+            .limit(1)
+            .get();
+
+      final id = query2.docs.first.id;
 
       await http.post(
           url,
@@ -138,7 +140,8 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
           body: jsonEncode({
             'token': data['fcmTokens'],
             'docID': id,
-            'role': 'lecturers',
+            'role': 'students',
+            'moduleName': module,
           })
         );
 
@@ -152,27 +155,6 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
           'status': 'pending',
     });
       print("request sent lol");
-
-      /* final times = timeslot.split('-');
-      final startTime = DateTime.parse("$date ${times[0]}:00");
-      final endTime = DateTime.parse("$date ${times[1]}:00");
-      final title = "$module consultation with $student";
-
-      // 2. Create the Event object
-      final Event event = Event(
-        title: title,
-        description: 'Consultation with Lecturer',
-        location: 'Singapore Polytechnic',
-        startDate: startTime,
-        endDate: endTime,
-        iosParams: IOSParams(
-          reminder: Duration(minutes: 30), // Notification 30 mins before
-        ),
-      );
-
-      // 3. Open the native calendar
-      Add2Calendar.addEvent2Cal(event);
-      print("Added event or something"); */
 }
 
 
@@ -180,10 +162,9 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
   Widget build(BuildContext context) {
     final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
-    print(args['docID']);
-
     String chosenLecturer = args['selectedLecturer'];
     String documentID = args['docID'];
+    String getMod = args['module'];
 
 
     return Scaffold(
@@ -230,11 +211,7 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
               },
               onSelectDate: (date) {
                 setState(() {
-                  //print(dateInfo);
-                  
-
                   _updateTimeslotsForDate(date, chosenLecturer);
-
                 });
               },
             ),
@@ -271,7 +248,7 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
                 child: ElevatedButton(
                   onPressed: (_selectedDate != null && _selectedTime != null)
                       ? () async {
-                          await sendRequest(documentID, chosenLecturer, _selectedDate.toString(), _selectedTime.toString());
+                          await sendRequest(documentID, chosenLecturer, _selectedDate.toString(), _selectedTime.toString(), getMod);
                           Navigator.pushNamed(context, '/scheduleStudent');
                         }
                       : null,
@@ -282,7 +259,7 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
                     ),
                   ),
                   child: const Text(
-                    'Schedule Consultation',
+                    'Rechedule Consultation',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -300,7 +277,8 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
   }
 }
 
-// --------------------- Your Existing Widgets ---------------------
+// --------------------- Widgets ---------------------
+
 
 class _CalendarCard extends StatelessWidget {
   const _CalendarCard({
@@ -325,6 +303,9 @@ class _CalendarCard extends StatelessWidget {
     final totalCells = leadingEmpty + daysInMonth;
     final trailingEmpty = (7 - (totalCells % 7)) % 7;
     final monthLabel = _monthLabel(month);
+
+    final tomorrow = DateTime.now().add(const Duration(days: 1));
+    final today = DateTime.now();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -382,7 +363,9 @@ class _CalendarCard extends StatelessWidget {
             spacing: 0,
             runSpacing: 4,
             children: [
+
               for (int i = 0; i < leadingEmpty; i++) const _DayCell.empty(),
+
               for (int day = 1; day <= daysInMonth; day++)
                 _DayCell(
                   day: day,
@@ -390,9 +373,19 @@ class _CalendarCard extends StatelessWidget {
                     selectedDate,
                     DateTime(month.year, month.month, day),
                   ),
-                  onTap: () =>
-                      onSelectDate(DateTime(month.year, month.month, day)),
+
+                  onTap: DateTime(month.year, month.month, day)
+                          .isBefore(DateTime(
+                        tomorrow.year,
+                        tomorrow.month,
+                        tomorrow.day,
+                      ))
+                      ? null
+                      : () => onSelectDate(
+                            DateTime(month.year, month.month, day),
+                          ),
                 ),
+
               for (int i = 0; i < trailingEmpty; i++) const _DayCell.empty(),
             ],
           ),
@@ -468,6 +461,8 @@ class _DayCell extends StatelessWidget {
   Widget build(BuildContext context) {
     if (day == null) return const SizedBox(width: 44, height: 36);
 
+    final disabled = onTap == null;
+
     return SizedBox(
       width: 44,
       height: 36,
@@ -479,7 +474,11 @@ class _DayCell extends StatelessWidget {
             width: 32,
             height: 32,
             decoration: BoxDecoration(
-              color: selected ? const Color(0xFFE0443E) : Colors.transparent,
+              color: selected
+                  ? const Color(0xFFE0443E)
+                  : disabled
+                      ? const Color(0xFFEDEDED)
+                      : Colors.transparent,
               shape: BoxShape.circle,
             ),
             alignment: Alignment.center,
@@ -488,7 +487,11 @@ class _DayCell extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: selected ? Colors.white : const Color(0xFF616161),
+                color: selected
+                    ? Colors.white
+                    : disabled
+                        ? const Color(0xFF9E9E9E)
+                        : const Color(0xFF616161),
               ),
             ),
           ),

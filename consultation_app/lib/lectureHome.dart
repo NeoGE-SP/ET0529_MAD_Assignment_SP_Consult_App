@@ -21,7 +21,6 @@ class _LectureHomeState extends State<LectureHome> {
     _loadUserData();
   }
 
-  // Load both profile image and other user fields from Firestore
   Future<void> _loadUserData() async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
@@ -30,13 +29,12 @@ class _LectureHomeState extends State<LectureHome> {
   try {
     final collections = ['students', 'lecturers'];
 
-    // Try fetching from each collection
     for (String col in collections) {
       final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
       if (doc.exists) {
         data = doc.data();
         roleFound = col;
-        break; // Stop once we find the document
+        break; 
       }
     }
 
@@ -68,7 +66,7 @@ class _LectureHomeState extends State<LectureHome> {
           children: [
             const Padding(padding: EdgeInsetsGeometry.all(10)),
             Text(
-              'Welcome, $nameFound!', //add variable here for name from firebase
+              'Welcome, $nameFound!', 
               style: TextStyle(fontSize:30, fontWeight: FontWeight.bold),
             ),
 

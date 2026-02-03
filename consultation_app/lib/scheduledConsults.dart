@@ -12,9 +12,8 @@ class ConfirmStudent extends StatefulWidget {
 }
 
 class _ConfirmStudentState extends State<ConfirmStudent> {
- // ✅ Local instance variables for this page
   bool isLoading = true;
-  bool _alreadyLoaded = false; // 🔹 Prevent double fetch
+  bool _alreadyLoaded = false; 
   List<consults> scheduled = [];
   List<consults> pending = [];
   List<consults> rejected = [];
@@ -30,7 +29,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
   }
 
   Future<void> _loadConsultsOnce() async {
-    if (_alreadyLoaded) return; // 🔹 Prevent double call
+    if (_alreadyLoaded) return;
     _alreadyLoaded = true;
 
     final user = FirebaseAuth.instance.currentUser;
@@ -40,20 +39,19 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
   try {
     final collections = ['students', 'lecturers'];
 
-    // Try fetching from each collection
     for (String col in collections) {
       final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
       if (doc.exists) {
         data = doc.data();
         roleFound = col;
-        break; // Stop once we find the document
+        break; 
       }
     }
 
     if (data != null) {
       setState(() {
         userData = data;
-        userData!['role'] = roleFound; // store the role as well
+        userData!['role'] = roleFound;
         print(roleFound);
         isLoading = false;
       });
@@ -66,11 +64,9 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
     setState(() => isLoading = false);
   }
 
-    // 🔹 Call service
     print(data!['name'].toString());
     await consultService.getAllConsults(roleFound.toString(), data['name'].toString());
 
-    // 🔹 Copy completed consults to local instance variable
     setState(() {
       scheduled = List.from(consultService.scheduled);
       pending = List.from(consultService.pending);
@@ -158,14 +154,12 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
 
   @override
   Widget build(BuildContext context) {
-    // 🔄 Loading state
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       );
     }
 
-    // 📭 Empty state
     if (overall.isEmpty) {
       return Scaffold(
         appBar: AppBar(
@@ -193,7 +187,6 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
       );
     }
 
-    // ✅ Data exists
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -233,7 +226,6 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                       padding: const EdgeInsets.all(15),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10),
-                        //color: const Color.fromARGB(255, 255, 146, 146),
                         color: const Color.fromARGB(255, 255, 251, 146),
 
                       ),
@@ -485,8 +477,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                                       backgroundColor: Colors.white),
                                   onPressed: () async {
                                     await getId(consult.code);
-                                    Navigator.pushNamed(context, '/reschedConsult', arguments: {'docID': specDocID.toString(), 'selectedLecturer' : consult.lecturer.toString()});
-                                    //firebase func to update date ONLY
+                                    Navigator.pushNamed(context, '/reschedConsult', arguments: {'docID': specDocID.toString(), 'selectedLecturer' : consult.lecturer.toString(), 'module': consult.mod.toString()});
                                   },
                                   child: const Text(
                                     'Reschedule',
@@ -612,8 +603,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                                       backgroundColor: Colors.white),
                                   onPressed: () async {
                                     await getId(consult.code);
-                                    Navigator.pushReplacementNamed(context, '/reschedConsult', arguments: {'docID': specDocID, 'selectedLecturer' : consult.lecturer.toString()});
-                                    //firebase func to update date ONLY
+                                    Navigator.pushReplacementNamed(context, '/reschedConsult', arguments: {'docID': specDocID, 'selectedLecturer' : consult.lecturer.toString(), 'module': consult.mod});
                                   },
                                   child: const Text(
                                     'Reschedule',
