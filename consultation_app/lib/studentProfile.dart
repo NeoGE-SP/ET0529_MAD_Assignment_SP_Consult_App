@@ -30,7 +30,6 @@ class _ProfilePageState extends State<ProfilePage> {
     _loadUserData();
   }
 
-  // Load both profile image and other user fields from Firestore
   Future<void> _loadUserData() async {
   final user = FirebaseAuth.instance.currentUser;
   if (user == null) return;
@@ -39,32 +38,29 @@ class _ProfilePageState extends State<ProfilePage> {
   try {
     final collections = ['students', 'lecturers'];
 
-    // Try fetching from each collection
     for (String col in collections) {
       final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
       if (doc.exists) {
         data = doc.data();
         roleFound = col;
-        break; // Stop once we find the document
+        break; 
       }
     }
 
     if (data != null) {
-      // Load profile image if it exists
       final base64String = data['profileImageBase64'];
       if (base64String != null && base64String.isNotEmpty) {
         try {
           _profileImageBytes = base64Decode(base64String);
         } catch (e) {
           print("Failed to decode profile image: $e");
-          _profileImageBytes = null; // fallback to default image
+          _profileImageBytes = null;
         }
       }
 
-      // Store all other fields + role for access anywhere in the page
       setState(() {
         userData = data;
-        userData!['role'] = roleFound; // store the role as well
+        userData!['role'] = roleFound;
         print(roleFound);
         isLoading = false;
       });
@@ -78,7 +74,6 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 }
 
-  // Keep existing pick image logic unchanged
   Future<void> _pickImage() async {
     showModalBottomSheet(
       context: context,
@@ -158,7 +153,7 @@ class _ProfilePageState extends State<ProfilePage> {
       final user = FirebaseAuth.instance.currentUser;
       if (user == null) return;
       await FirebaseFirestore.instance
-          .collection(roleFound.toString()) // or "lecturers", depending on role
+          .collection(roleFound.toString()) 
           .doc(user.uid)
           .update({
             "fcmTokens": FieldValue.arrayRemove([fcmToken])
@@ -166,10 +161,8 @@ class _ProfilePageState extends State<ProfilePage> {
       await FirebaseAuth.instance.signOut();
     }
 
-  // Your main UI can remain completely unchanged
   @override
   Widget build(BuildContext context) {
-    // Optional: You can check if userData is loaded if you need it in logic
     if (isLoading) return const Center(child: CircularProgressIndicator());
 
     return Scaffold(
@@ -190,7 +183,10 @@ class _ProfilePageState extends State<ProfilePage> {
                   ? FileImage(_imageFile!)
                   : _profileImageBytes != null
                       ? MemoryImage(_profileImageBytes!)
-                      : const AssetImage('assets/img/sp_logo.png') as ImageProvider,
+                      : null,
+              child: (_imageFile == null && _profileImageBytes == null)
+                ? const Icon(Icons.person, size: 50, color: Colors.purple)
+                : null,
             ),
             const SizedBox(height: 20),
             FilledButton(
@@ -252,7 +248,6 @@ class _ProfilePageState extends State<ProfilePage> {
             ElevatedButton(
               onPressed: () async {
                 await signOut();
-                // navigation happens after signOut finishes
                 if (!mounted) return;
                 Navigator.pushReplacementNamed(context, '/login');
               },

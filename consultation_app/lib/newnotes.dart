@@ -16,7 +16,10 @@ class _NewNotesPageState extends State<NewNotesPage> {
 
   late stt.SpeechToText _speech;
   bool _isListening = false;
-  String _lastRecognized = '';
+  bool _isControllerInitialized = false;
+
+  String _finalSpeech = '';
+  String _liveSpeech = '';
 
   @override
   void initState() {
@@ -26,93 +29,100 @@ class _NewNotesPageState extends State<NewNotesPage> {
 
   @override
   void dispose() {
+    _speech.stop();
     _studentController.dispose();
     _lecturerController.dispose();
-    _speech.stop();
     super.dispose();
   }
 
-  TextEditingController _activeController(String role) {
-    return role == 'students'
-        ? _studentController
-        : _lecturerController;
-  }
-
-  void _appendSpeech(String role, String spokenText) {
-    if (spokenText.trim().isEmpty) return;
-    if (spokenText == _lastRecognized) return; 
-
-    _lastRecognized = spokenText;
-
-    final controller = _activeController(role);
-
-    final formatted = _applyBasicPunctuation(spokenText);
-
-    final newText = controller.text.isEmpty
-        ? formatted
-        : '${controller.text} $formatted';
-
-    controller.text = newText;
-    controller.selection = TextSelection.fromPosition(
-      TextPosition(offset: newText.length),
-    );
-  }
+  TextEditingController _activeController(String role) =>
+      role == 'students' ? _studentController : _lecturerController;
 
   String _applyBasicPunctuation(String text) {
     var t = text.trim();
-
-    if (t.endsWith(' period')) {
-      t = t.replaceFirst(RegExp(r' period$'), '.');
-    } else if (t.endsWith(' comma')) {
-      t = t.replaceFirst(RegExp(r' comma$'), ',');
-    } else if (t.endsWith(' question mark')) {
+    if (t.endsWith(' period')) t = t.replaceFirst(RegExp(r' period$'), '.');
+    if (t.endsWith(' comma')) t = t.replaceFirst(RegExp(r' comma$'), ',');
+    if (t.endsWith(' question mark')) {
       t = t.replaceFirst(RegExp(r' question mark$'), '?');
     }
-
     return t;
+  }
+
+  void _updateController(String role) {
+    final controller = _activeController(role);
+    final combined = (_finalSpeech + ' ' + _liveSpeech).trim();
+    controller.text = combined;
+    controller.selection = TextSelection.fromPosition(
+      TextPosition(offset: controller.text.length),
+    );
   }
 
   Future<void> _toggleListening(String role) async {
     var status = await Permission.microphone.status;
+
     if (!status.isGranted) {
       status = await Permission.microphone.request();
       if (!status.isGranted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Microphone permission is required for speech input.'),
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Microphone permission is required.'),
+            ),
+          );
+        }
         return;
       }
     }
 
     if (_isListening) {
       await _speech.stop();
-      setState(() => _isListening = false);
+      if (mounted) setState(() => _isListening = false);
       return;
     }
 
     final available = await _speech.initialize(
       onStatus: (status) {
+        if (!mounted) return;
         if (status == 'notListening') {
-          setState(() => _isListening = false);
+          if (_isListening) setState(() => _isListening = false);
         }
       },
-      onError: (_) {
+      onError: (error) {
+        if (!mounted) return;
         setState(() => _isListening = false);
       },
     );
 
     if (!available) return;
 
-    _lastRecognized = '';
-    setState(() => _isListening = true);
+    _liveSpeech = '';
 
-    await _speech.listen(
+    if (mounted) setState(() => _isListening = true);
+
+    _startListening(role);
+  }
+
+  void _startListening(String role) {
+    _speech.listen(
       listenMode: stt.ListenMode.dictation,
       partialResults: true,
+      cancelOnError: false,
+      pauseFor: const Duration(seconds: 60),
       onResult: (result) {
-        _appendSpeech(role, result.recognizedWords);
+        if (!mounted) return;
+
+        _liveSpeech = _applyBasicPunctuation(result.recognizedWords);
+
+        if (result.finalResult) {
+          _finalSpeech = (_finalSpeech + ' ' + _liveSpeech).trim();
+          _liveSpeech = '';
+        }
+
+        _updateController(role);
+
+        if (!_speech.isListening && _isListening) {
+          setState(() => _isListening = false);
+        }
       },
     );
   }
@@ -127,9 +137,7 @@ class _NewNotesPageState extends State<NewNotesPage> {
         .limit(1)
         .get();
 
-    if (querySnapshot.docs.isEmpty) {
-      throw Exception('Consult not found');
-    }
+    if (querySnapshot.docs.isEmpty) throw Exception('Consult not found');
 
     final docRef = querySnapshot.docs.first.reference;
 
@@ -137,12 +145,14 @@ class _NewNotesPageState extends State<NewNotesPage> {
       await docRef.update({
         'student_notes': _studentController.text.trim(),
       });
+
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/scheduleStudent');
     } else {
       await docRef.update({
         'lecturer_notes': _lecturerController.text.trim(),
       });
+
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, '/scheduleLecture');
     }
@@ -155,10 +165,14 @@ class _NewNotesPageState extends State<NewNotesPage> {
 
     final int code = args['c_code'];
     final String role = args['role'];
-    final String notes = args['notes'];
     final String name = args['name'];
+    final String notes = args['notes'];
 
-    _activeController(role).text = notes.trim();
+    if (!_isControllerInitialized) {
+      _activeController(role).text = notes.trim();
+      _finalSpeech = notes.trim();
+      _isControllerInitialized = true;
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
@@ -192,8 +206,9 @@ class _NewNotesPageState extends State<NewNotesPage> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
                 child: NotesCard(
-                  title:
-                      role == 'students' ? 'Students Notes' : 'Lecturers Notes',
+                  title: role == 'students'
+                      ? 'Student Notes'
+                      : 'Lecturer Notes',
                   name: name,
                   controller: _activeController(role),
                   isListening: _isListening,
@@ -205,8 +220,10 @@ class _NewNotesPageState extends State<NewNotesPage> {
               ),
               const SizedBox(height: 12),
               ElevatedButton(
-                onPressed: () =>
-                    _saveNotes(consultCode: code, role: role),
+                onPressed: () => _saveNotes(
+                  consultCode: code,
+                  role: role,
+                ),
                 style: const ButtonStyle(
                   backgroundColor:
                       MaterialStatePropertyAll(Colors.blue),
@@ -273,7 +290,8 @@ class NotesCard extends StatelessWidget {
                     children: [
                       Text(title,
                           style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 16)),
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16)),
                       const SizedBox(height: 2),
                       Text(name,
                           style: const TextStyle(

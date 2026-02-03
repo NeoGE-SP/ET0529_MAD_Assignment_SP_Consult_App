@@ -185,7 +185,10 @@ class _LectureProfilePageState extends State<LectureProfilePage> {
                   ? FileImage(_imageFile!)
                   : _profileImageBytes != null
                       ? MemoryImage(_profileImageBytes!)
-                      : const AssetImage('assets/img/sp_logo.png') as ImageProvider,
+                      : null,
+              child: (_imageFile == null && _profileImageBytes == null)
+                  ? const Icon(Icons.person, size: 50, color: Colors.purple)
+                  : null,
             ),
             const SizedBox(height: 20),
             FilledButton(

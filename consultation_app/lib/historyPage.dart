@@ -47,7 +47,7 @@ class _HistoryPageState extends State<HistoryPage> {
     if (data != null) {
       setState(() {
         userData = data;
-        userData!['role'] = roleFound; // store the role as well
+        userData!['role'] = roleFound;
         print(roleFound);
         isLoading = false;
       });
