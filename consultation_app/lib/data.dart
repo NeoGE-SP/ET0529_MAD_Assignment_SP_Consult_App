@@ -10,11 +10,11 @@ class Module {
 
 
 class studentProfile {
-  String adm, classNo, email, name;
+  String adm, classNo, email, name, uid;
   List<String> lecturers;
   List<Module> mods;
 
-  studentProfile(this.adm, this.classNo, this.email, this.name, this.lecturers, this.mods);
+  studentProfile(this.uid, this.adm, this.classNo, this.email, this.name, this.lecturers, this.mods);
 }
 
 class studentProfile_Service {
@@ -28,6 +28,7 @@ class studentProfile_Service {
 
     for (var doc in qs.docs) {
       final studentInfo = doc.data() as Map<String, dynamic>;
+      final studentInfoId = doc.id;
 
       final List<String> lecturers =
           studentInfo['Lecturers'] != null
@@ -49,6 +50,7 @@ class studentProfile_Service {
 
       z.add(
         studentProfile(
+          studentInfoId,
           studentInfo['adm'],
           studentInfo['class'],
           studentInfo['email'],

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mad_assignment_sp_consult_booking/data.dart';
 
@@ -28,7 +29,9 @@ class _Newconsult1State extends State<Newconsult1> {
 
   Future<void> loadProfile() async {
     await studentProfile_Service.getAllStudents();
-    final profile = studentProfile_Service.getProfileAt(0);
+    final user = FirebaseAuth.instance.currentUser;
+    int index = studentProfile_Service.z.indexWhere((student) => student.uid == user?.uid);
+    final profile = studentProfile_Service.getProfileAt(index);
 
     setState(() {
       lecturers = profile?.lecturers ?? [];

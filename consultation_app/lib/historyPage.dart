@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mad_assignment_sp_consult_booking/data.dart';
+import 'dart:convert';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -11,12 +12,12 @@ class HistoryPage extends StatefulWidget {
 }
 
 class _HistoryPageState extends State<HistoryPage> {
- 
   bool isLoading = true;
   bool _alreadyLoaded = false; 
   List<consults> completed = [];
   Map<String, dynamic>? userData;
   String? roleFound;
+  Map<String, String?> lecturerImages = {};
 
   @override
   void initState() {
@@ -29,10 +30,9 @@ class _HistoryPageState extends State<HistoryPage> {
     _alreadyLoaded = true;
 
     final user = FirebaseAuth.instance.currentUser;
-  if (user == null) return;
-  Map<String, dynamic>? data;
+    if (user == null) return;
+    Map<String, dynamic>? data;
 
-  try {
     final collections = ['students', 'lecturers'];
 
     for (String col in collections) {
@@ -48,31 +48,37 @@ class _HistoryPageState extends State<HistoryPage> {
       setState(() {
         userData = data;
         userData!['role'] = roleFound;
-        print(roleFound);
         isLoading = false;
       });
     } else {
-      print("User document not found in any collection!");
       setState(() => isLoading = false);
     }
-  } catch (e) {
-    print("Error loading user data: $e");
-    setState(() => isLoading = false);
-  }
 
-    
     await consultService.getAllConsults(roleFound.toString(), data!['name'].toString());
+    completed = List.from(consultService.completed);
+
+    for (var consult in completed) {
+      if (!lecturerImages.containsKey(consult.lecturer)) {
+        final query = await FirebaseFirestore.instance
+            .collection('lecturers')
+            .where('name', isEqualTo: consult.lecturer)
+            .limit(1)
+            .get();
+        if (query.docs.isNotEmpty) {
+          lecturerImages[consult.lecturer] = query.docs.first.data()['profileImage'] as String?;
+        } else {
+          lecturerImages[consult.lecturer] = null;
+        }
+      }
+    }
 
     setState(() {
-      completed = List.from(consultService.completed);
       isLoading = false;
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
-    
     if (isLoading) {
       return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
@@ -107,7 +113,6 @@ class _HistoryPageState extends State<HistoryPage> {
                 itemCount: completed.length,
                 itemBuilder: (context, index) {
                   final consult = completed[index];
-
                   return Container(
                     margin: const EdgeInsets.only(bottom: 15),
                     padding: const EdgeInsets.all(15),
@@ -135,11 +140,17 @@ class _HistoryPageState extends State<HistoryPage> {
                           children: [
                             Column(
                               children: [
-                                const CircleAvatar(
+                                CircleAvatar(
                                   radius: 40,
-                                  backgroundColor:
-                                      Color.fromARGB(255, 214, 214, 214),
-                                  child: Icon(Icons.person, size: 40),
+                                  backgroundColor: const Color(0xFFD6D6D6),
+                                  backgroundImage: lecturerImages[consult.lecturer] != null
+                                      ? MemoryImage(
+                                          base64Decode(lecturerImages[consult.lecturer]!),
+                                        )
+                                      : null,
+                                  child: lecturerImages[consult.lecturer] == null
+                                      ? const Icon(Icons.person, size: 40)
+                                      : null,
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
@@ -187,7 +198,7 @@ class _HistoryPageState extends State<HistoryPage> {
                                             fontWeight: FontWeight.bold)),
                                       Text(consult.code.toString())
                                       ],),
-                                      ],),
+                                  ],),
                                 ],
                               ),
                             ),
@@ -199,7 +210,14 @@ class _HistoryPageState extends State<HistoryPage> {
                             style: FilledButton.styleFrom(
                                 backgroundColor: Colors.white),
                             onPressed: () {
-                              Navigator.pushReplacementNamed(context, '/notes', arguments: {'lecturer_name': consult.lecturer, 'lecturer_notes': consult.lectureNotes, 'student_name': consult.student, 'student_notes': consult.studentNotes, 'c_code': consult.code, 'role': 'students'});
+                              Navigator.pushReplacementNamed(context, '/notes', arguments: {
+                                'lecturer_name': consult.lecturer,
+                                'lecturer_notes': consult.lectureNotes,
+                                'student_name': consult.student,
+                                'student_notes': consult.studentNotes,
+                                'c_code': consult.code,
+                                'role': 'students'
+                              });
                             },
                             child: const Text(
                               'Consultation Notes',
