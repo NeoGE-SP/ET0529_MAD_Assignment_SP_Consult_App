@@ -29,7 +29,6 @@ app.post("/rejectnotif", async (req, res) => {
 
 app.post("/acceptnotif", async (req, res) => {
   const { token, docID, role , moduleName} = req.body;
-  console.log(token)
 
   sendAcceptNotification(token, docID, role, moduleName);
   res.status(200).send({ success: true });

@@ -239,9 +239,9 @@ class _Newconsult1State extends State<Newconsult1> {
                             }
                             if (_preController.text.trim().isNotEmpty) {
                               print(_preController.text);
-                              Navigator.pushNamed(context, '/newConsult2', arguments: {'student_notes': _preController.text, 'selectedLecturer': _selectedLecturer.toString(), 'selectedModule': _selectedModule.toString(), 'selectedMode': _selectedMode.toString()});
+                              Navigator.pushReplacementNamed(context, '/newConsult2', arguments: {'student_notes': _preController.text, 'selectedLecturer': _selectedLecturer.toString(), 'selectedModule': _selectedModule.toString(), 'selectedMode': _selectedMode.toString()});
                             } else {
-                              Navigator.pushNamed(context, '/newConsult2', arguments: {'student_notes': "", 'selectedLecturer': _selectedLecturer.toString(), 'selectedModule': _selectedModule.toString(), 'selectedMode': _selectedMode.toString()});
+                              Navigator.pushReplacementNamed(context, '/newConsult2', arguments: {'student_notes': "", 'selectedLecturer': _selectedLecturer.toString(), 'selectedModule': _selectedModule.toString(), 'selectedMode': _selectedMode.toString()});
                             }
                           },
                           style: ElevatedButton.styleFrom(
