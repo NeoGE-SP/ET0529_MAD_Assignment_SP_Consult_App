@@ -320,7 +320,6 @@ class _CalendarCard extends StatelessWidget {
     final monthLabel = _monthLabel(month);
 
     final tomorrow = DateTime.now().add(const Duration(days: 1));
-    final today = DateTime.now();
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

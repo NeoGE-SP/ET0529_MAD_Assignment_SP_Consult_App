@@ -138,7 +138,6 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
   Future<void> sendAccept(String documentID, String chosenStudent, int code, String loc, String timeslot, String module, String student, String date, String lecturer) async {
     final studentQuery = await FirebaseFirestore.instance.collection('students').where('name', isEqualTo: chosenStudent).limit(1).get();
     final studentData = studentQuery.docs.first.data();
-    final studentId = studentQuery.docs.first.id;
     final lecturerQuery = await FirebaseFirestore.instance.collection('lecturers').where('name', isEqualTo: lecturer).limit(1).get();
     final lecturerId = lecturerQuery.docs.first.id;
     final url = Uri.parse('https://triaryl-thi-unobliged.ngrok-free.dev/acceptnotif');
