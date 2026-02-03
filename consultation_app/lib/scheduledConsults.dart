@@ -285,14 +285,24 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
               ),
               const SizedBox(width: 15),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _info('Date', consult.date),
-                    _info('Time', consult.timeslot),
-                    _info('Location', consult.location),
-                    _info('Consult Code', consult.code.toString()),
-                  ],
+                child: Row(
+                  children: [ 
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _info('Date', consult.date),
+                        _info('Time', consult.timeslot),
+                        _info('Location', consult.location),
+                        _info('Consult Code', consult.code.toString()),
+                      ],
+                    ),
+                    SizedBox(width: 15,),
+                    Text("|"),
+                    SizedBox(width: 15,),
+                    Center(
+                      child: _info('Reason', consult.reason)
+                    ),
+                  ]
                 ),
               ),
             ],
