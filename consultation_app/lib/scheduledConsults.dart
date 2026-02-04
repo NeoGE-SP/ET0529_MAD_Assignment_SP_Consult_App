@@ -323,7 +323,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
         children: [
           FilledButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/newNotes', arguments: {
+              Navigator.pushReplacementNamed(context, '/newNotes', arguments: {
                 'role': 'students',
                 'c_code': consult.code,
                 'name': consult.student,
@@ -355,7 +355,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
         FilledButton(
           onPressed: () async {
             await getId(consult.code);
-            Navigator.pushNamed(context, '/reschedConsult', arguments: {
+            Navigator.pushReplacementNamed(context, '/reschedConsult', arguments: {
               'docID': specDocID,
               'selectedLecturer': consult.lecturer,
               'module': consult.mod

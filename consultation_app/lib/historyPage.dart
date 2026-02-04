@@ -65,7 +65,7 @@ class _HistoryPageState extends State<HistoryPage> {
             .limit(1)
             .get();
         if (query.docs.isNotEmpty) {
-          lecturerImages[consult.lecturer] = query.docs.first.data()['profileImage'] as String?;
+          lecturerImages[consult.lecturer] = query.docs.first.data()['profileImageBase64'] as String?;
         } else {
           lecturerImages[consult.lecturer] = null;
         }

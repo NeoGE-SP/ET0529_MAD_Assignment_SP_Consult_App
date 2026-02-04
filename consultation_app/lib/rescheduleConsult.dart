@@ -289,7 +289,7 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
                   onPressed: (_selectedDate != null && _selectedTime != null)
                       ? () async {
                           await sendRequest(documentID, chosenLecturer, _selectedDate.toString(), _selectedTime.toString(), getMod, _selectedMode.toString());
-                          Navigator.pushNamed(context, '/scheduleStudent');
+                          Navigator.pushReplacementNamed(context, '/scheduleStudent');
                         }
                       : null,
                   style: ElevatedButton.styleFrom(

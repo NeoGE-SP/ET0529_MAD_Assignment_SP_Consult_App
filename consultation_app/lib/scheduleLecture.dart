@@ -385,12 +385,12 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               FilledButton(
-                                onPressed: () { Navigator.pushNamed(context, '/newNotes', arguments: {'role': 'lecturers', 'c_code': consult.code, 'name': consult.lecturer, 'notes': consult.lectureNotes}); },
+                                onPressed: () { Navigator.pushReplacementNamed(context, '/newNotes', arguments: {'role': 'lecturers', 'c_code': consult.code, 'name': consult.lecturer, 'notes': consult.lectureNotes}); },
                                 child: const Text('Consultation Notes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                               ),
                               const SizedBox(width: 40),
                               FilledButton(
-                                onPressed: () async { await completeConsult(consult.code); Navigator.pushNamed(context, '/reload'); },
+                                onPressed: () async { await completeConsult(consult.code); Navigator.pushReplacementNamed(context, '/reload'); },
                                 child: const Text('Complete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                               )
                             ],
