@@ -19,6 +19,7 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
   String? roleFound;
   Map<String, dynamic>? userData;
   bool isLoading = true;
+  String? _selectedMode;
 
   @override
   void initState() {
@@ -112,10 +113,12 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
     });
   }
 
-  Future<void> sendRequest(String documentID, String chosenLecturer,
+  Future<void> sendRequest(String documentID, 
+    String chosenLecturer,
     String date,
     String timeslot,
-    String module) async {
+    String module,
+    String location) async {
       final query = await FirebaseFirestore.instance
             .collection('lecturers')
             .where('name', isEqualTo: chosenLecturer)
@@ -153,6 +156,7 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
           'date': date,
           'timeslot': timeslot,
           'status': 'pending',
+          'location': location,
     });
       print("request sent lol");
 }
@@ -193,7 +197,42 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
               'Reschedule Consultation',
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: _OptionCard(
+                    label: 'Physical',
+                    tint: const Color(0xFFE9F3F6),
+                    icon: Icons.groups,
+                    height: 64,
+                    selected: _selectedMode == 'Physical',
+                    onTap: () {
+                      setState(() {
+                        _selectedMode = 'Physical';
+                      });
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: _OptionCard(
+                    label: 'Online',
+                    tint: const Color(0xFFF7E7DC),
+                    icon: Icons.videocam,
+                    height: 64,
+                    selected: _selectedMode == 'Online',
+                    onTap: () {
+                      setState(() {
+                        _selectedMode = 'Online';
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 24),
             _CalendarCard(
               month: _focusedMonth,
               selectedDate: _selectedDate,
@@ -248,7 +287,7 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
                 child: ElevatedButton(
                   onPressed: (_selectedDate != null && _selectedTime != null)
                       ? () async {
-                          await sendRequest(documentID, chosenLecturer, _selectedDate.toString(), _selectedTime.toString(), getMod);
+                          await sendRequest(documentID, chosenLecturer, _selectedDate.toString(), _selectedTime.toString(), getMod, _selectedMode.toString());
                           Navigator.pushNamed(context, '/scheduleStudent');
                         }
                       : null,
@@ -549,6 +588,63 @@ class _TimeSlotButton extends StatelessWidget {
               color: textColor,
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OptionCard extends StatelessWidget {
+  const _OptionCard({
+    required this.label,
+    required this.tint,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+    this.height = 72,
+  });
+
+  final String label;
+  final Color tint;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderColor =
+        selected ? const Color(0xFFE0443E) : const Color(0xFFD6D6D6);
+    final textColor =
+        selected ? const Color(0xFF1F1F1F) : const Color(0xFF424242);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        height: height,
+        decoration: BoxDecoration(
+          color: tint,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: borderColor, width: selected ? 2 : 1),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          children: [
+            Icon(icon, color: textColor),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: textColor,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -7,6 +7,7 @@ import 'package:image/image.dart' as img;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mad_assignment_sp_consult_booking/notification_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -19,6 +20,7 @@ class _ProfilePageState extends State<ProfilePage> {
   File? _imageFile;
   Uint8List? _profileImageBytes;
   final ImagePicker _picker = ImagePicker();
+  final Uri _websiteUri = Uri.parse('https://mysas2.sp.edu.sg/');
 
   String? roleFound;
   Map<String, dynamic>? userData;
@@ -73,6 +75,15 @@ class _ProfilePageState extends State<ProfilePage> {
     setState(() => isLoading = false);
   }
 }
+
+  Future<void> _openWebsite() async {
+    if (!await launchUrl(
+      _websiteUri,
+      mode: LaunchMode.externalApplication,
+    )) {
+      throw 'Could not launch $_websiteUri';
+    }
+  }
 
   Future<void> _pickImage() async {
     showModalBottomSheet(
@@ -228,17 +239,22 @@ class _ProfilePageState extends State<ProfilePage> {
                         style: TextStyle(fontStyle: FontStyle.italic),
                       ),
                       TextButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          _openWebsite();
+                        },
                         child: const Text(
                           'here',
                           style: TextStyle(
+                            fontStyle: FontStyle.italic,
                             color: Color.fromARGB(255, 0, 86, 156),
                             fontWeight: FontWeight.bold,
                             decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
-                      const Text('to access SAS.'),
+                      const Text('to access SAS.',
+                        style: TextStyle(fontStyle: FontStyle.italic),
+                      ),
                     ],
                   ),
                 ],
