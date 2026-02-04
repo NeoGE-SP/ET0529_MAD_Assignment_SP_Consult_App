@@ -157,6 +157,7 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
           'timeslot': timeslot,
           'status': 'pending',
           'location': location,
+          'rej_reason': "",
     });
       print("request sent lol");
 }

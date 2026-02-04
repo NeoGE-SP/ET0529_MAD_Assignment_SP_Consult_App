@@ -134,7 +134,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
     final Event event = Event(
       title: "$module consultation with $lecturer",
       description: 'Consultation with Lecturer',
-      location: 'Singapore Polytechnic, $location',
+      location: location,
       startDate: startTime,
       endDate: endTime,
       iosParams: IOSParams(reminder: Duration(minutes: 30)),
@@ -285,24 +285,27 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
               ),
               const SizedBox(width: 15),
               Expanded(
-                child: Row(
-                  children: [ 
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
                         _info('Date', consult.date),
-                        _info('Time', consult.timeslot),
-                        _info('Location', consult.location),
-                        _info('Consult Code', consult.code.toString()),
-                      ],
+                        if (consult.status == 'rejected') ...[
+                          SizedBox(width: 15,),
+                          Text("|"),
+                          SizedBox(width: 15,),
+                          SizedBox(
+                            width: 130,
+                            child: _info('Reason', consult.reason)
+                          )
+                        ]
+                      ]
                     ),
-                    SizedBox(width: 15,),
-                    Text("|"),
-                    SizedBox(width: 15,),
-                    Center(
-                      child: _info('Reason', consult.reason)
-                    ),
-                  ]
+                    _info('Time', consult.timeslot),
+                    _info('Location', consult.location),
+                    _info('Consult Code', consult.code.toString()),
+                  ],
                 ),
               ),
             ],

@@ -187,7 +187,7 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
     final Event event = Event(
       title: "$module consultation with $student",
       description: 'Consultation with Lecturer',
-      location: 'Singapore Polytechnic, $loc',
+      location: loc,
       startDate: startTime,
       endDate: endTime,
       iosParams: IOSParams(reminder: Duration(minutes: 30)),
@@ -269,31 +269,30 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
+                                  const SizedBox(height: 8),
                                   const Text('Date', style: TextStyle(fontWeight: FontWeight.bold)),
                                   Text(consult.date.isNotEmpty ? consult.date : 'No date'),
+                                  Row(children: [
+                                    Column( 
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text('Time', style: TextStyle(fontWeight: FontWeight.bold)), 
+                                        Text(consult.timeslot.isNotEmpty ? consult.timeslot : 'No timeslot'),
+                                      ]
+                                    ),
+                                    const SizedBox(width: 20),
+                                    const Text("|"),
+                                    const SizedBox(width: 20),
+                                    Column(
+                                      children: [
+                                        const Text('Consult Code', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        Text(consult.code.toString())
+                                      ],
+                                    ),
+                                  ]),
                                   const SizedBox(height: 8),
-                                  const Text('Time', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  Text(consult.timeslot.isNotEmpty ? consult.timeslot : 'No timeslot'),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Column(
-                                        children: [
-                                          const Text('Location', style: TextStyle(fontWeight: FontWeight.bold)),
-                                          Text(consult.location.isNotEmpty ? consult.location : 'No location'),
-                                        ],
-                                      ),
-                                      const SizedBox(width: 20),
-                                      const Text("|"),
-                                      const SizedBox(width: 20),
-                                      Column(
-                                        children: [
-                                          const Text('Consult Code', style: TextStyle(fontWeight: FontWeight.bold)),
-                                          Text(consult.code.toString())
-                                        ],
-                                      ),
-                                    ],
-                                  ),
+                                  const Text('Location', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  Text(consult.location.isNotEmpty ? consult.location : 'No location'),
                                 ],
                               ),
                             ),
