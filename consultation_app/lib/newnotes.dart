@@ -188,10 +188,19 @@ class _NewNotesPageState extends State<NewNotesPage> {
                 padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
                 child: Row(
                   children: [
+                    if (role == 'students') ...[
                     IconButton(
                       icon: const Icon(Icons.close, size: 26),
-                      onPressed: () => Navigator.of(context).maybePop(),
+                      onPressed: () => Navigator.pushReplacementNamed(context, '/scheduleStudent'),
                     ),
+                    ],
+                    if (role == 'lecturers') ...[
+                      IconButton(
+                      icon: const Icon(Icons.close, size: 26),
+                      onPressed: () => Navigator.pushReplacementNamed(context, '/scheduleLecture'),
+                    ),
+                    ],
+
                     const SizedBox(width: 4),
                     const Text(
                       'Consultation Notes',

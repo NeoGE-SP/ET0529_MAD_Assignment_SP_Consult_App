@@ -46,6 +46,7 @@ class _NotesPageState extends State<NotesPage> {
   @override
   void dispose() {
     _studentController.dispose();
+    _lecturerController.dispose();
     super.dispose();
   }
 

@@ -175,6 +175,10 @@ class _RescheduleconsultState extends State<Rescheduleconsult> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/scheduleStudent'),
+        ),
         backgroundColor: Colors.white,
         centerTitle: true,
         title: Image.asset(

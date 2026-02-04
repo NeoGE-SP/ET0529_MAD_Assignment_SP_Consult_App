@@ -134,7 +134,11 @@ class _UpdateAvailabilityPageState extends State<UpdateAvailabilityPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Update Availability")),
+      appBar: AppBar(leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pushReplacementNamed(context, '/HomePage'),
+        ),
+        title: const Text("Update Availability")),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
