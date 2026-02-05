@@ -1,0 +1,225 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class Module {
+  final String modCode;
+  final String modIcon;
+  final List<String> lectureSelect;
+
+  Module(this.modCode, this.modIcon, this.lectureSelect);
+}
+
+
+class studentProfile {
+  String adm, classNo, email, name, uid;
+  List<String> lecturers;
+  List<Module> mods;
+
+  studentProfile(this.uid, this.adm, this.classNo, this.email, this.name, this.lecturers, this.mods);
+}
+
+class studentProfile_Service {
+  static List<studentProfile> z = [];
+  static CollectionReference studentData =
+      FirebaseFirestore.instance.collection('students');
+
+  static Future<void> getAllStudents() async {
+    z.clear();
+    QuerySnapshot qs = await studentData.get();
+
+    for (var doc in qs.docs) {
+      final studentInfo = doc.data() as Map<String, dynamic>;
+      final studentInfoId = doc.id;
+
+      final List<String> lecturers =
+          studentInfo['Lecturers'] != null
+              ? List<String>.from(studentInfo['Lecturers'])
+              : [];
+
+      final List<Module> mods = studentInfo['Modules'] != null
+        ? (studentInfo['Modules'] as List).map((m) {
+            final List<String> moduleLecturers = m['lecturer'] != null
+                ? List<String>.from(m['lecturer'])
+                : [];
+            return Module(
+              m['modCode'] ?? 'Unknown',
+              m['modIcon'] ?? 'book',
+              moduleLecturers,
+            );
+          }).toList()
+        : [];
+
+      z.add(
+        studentProfile(
+          studentInfoId,
+          studentInfo['adm'],
+          studentInfo['class'],
+          studentInfo['email'],
+          studentInfo['name'],
+          lecturers,
+          mods,
+        ),
+      );
+    }
+  }
+
+  static studentProfile? getProfileAt(int index) {
+    if (index < 0 || index >= z.length) return null;
+    return z[index];
+  }
+}
+
+
+class Availability {
+  String date, timeslots;
+
+  Availability(this.date, this.timeslots);
+
+  @override
+  String toString() => 'Availability(date: $date, timeslots: $timeslots)';
+}
+
+class LectureInfo {
+  String staffID;
+  String name;
+  String email;
+  List<Availability> availability;
+
+  LectureInfo(this.staffID, this.name, this.email, this.availability);
+
+  @override
+  String toString() =>
+      'LectureInfo(staffID: $staffID, name: $name, email: $email, availability: $availability)';
+}
+
+class LectureProfileService {
+  static List<LectureInfo> lecturers = [];
+
+  static CollectionReference lectureData =
+      FirebaseFirestore.instance.collection('lecturers');
+
+  static Future<void> getAllLecturers() async {
+    lecturers.clear();
+
+    print('Fetching lecturers from Firebase...');
+    QuerySnapshot qs = await lectureData.get();
+
+    for (var doc in qs.docs) {
+      final data = doc.data() as Map<String, dynamic>?;
+
+      if (data == null) continue; 
+      print('Raw doc data: $data');
+
+      final staffID = data['adm']?.toString() ?? '';
+      final name = data['name']?.toString() ?? '';
+      final email = data['email']?.toString() ?? '';
+
+      final List<Availability> availList =
+          (data['availability'] as List<dynamic>?)
+                  ?.map((a) {
+                    final map = a as Map<String, dynamic>? ?? {};
+                    final date = map['date']?.toString() ?? '';
+                    final timeslots = map['timeslots']?.toString() ?? '';
+                    return Availability(date, timeslots);
+                  })
+                  .where((a) => a.date.isNotEmpty && a.timeslots.isNotEmpty)
+                  .toList() ??
+              [];
+
+      final lecture = LectureInfo(staffID, name, email, availList);
+      lecturers.add(lecture);
+
+      print('Parsed LectureInfo: $lecture');
+    }
+
+    print('Total lecturers fetched: ${lecturers.length}');
+  }
+
+  static LectureInfo getProfileAt(int index) {
+    return lecturers[index];
+  }
+}
+
+
+
+class consults {
+  String lecturer, lectureNotes, location, mod, status, student, studentNotes, timeslot, date, reason;
+  int code;
+
+  consults(this.lecturer, this.lectureNotes, this.location, this.mod, this.status, this.student,
+          this.studentNotes, this.timeslot, this.date,this.reason, this.code);
+
+}
+
+
+class consultService {
+    static List<consults> completed = [];
+    static List<consults> scheduled = [];
+    static List<consults> pending = [];
+    static List<consults> rejected = [];
+
+    static CollectionReference consult =
+      FirebaseFirestore.instance.collection('consults');
+
+    static Future<void> getAllConsults(String role, String name) async {
+      completed.clear();
+      scheduled.clear();
+      pending.clear();
+      rejected.clear();
+      QuerySnapshot qs = await consult.where(role, isEqualTo: name).get();
+      print(qs.docs);
+
+      for (int i=0;i<qs.docs.length;i++){
+        DocumentSnapshot doc = qs.docs[i];
+        Map<String, dynamic> consultInfo = doc.data() as Map<String,dynamic>;
+      
+        final lecturer = consultInfo['lecturers']?.toString() ?? 'Unknown';
+        final lecturerNotes = consultInfo['lecturer_notes']?.toString() ?? '';
+        final location = consultInfo['location']?.toString() ?? 'Unknown';
+        final module = consultInfo['module']?.toString() ?? 'Unknown';
+        final student = consultInfo['students']?.toString() ?? 'Unknown';
+        final studentNotes = consultInfo['student_notes']?.toString() ?? '';
+        final timeslot = consultInfo['timeslot']?.toString() ?? '';
+        final date = ((consultInfo['date'])?.toString()) ?? '';
+        final reason = ((consultInfo['rej_reason'])?.toString()) ?? '';
+        final code = consultInfo['consult_code'] ?? 0;
+
+        final status = (consultInfo['status']?.toString() ?? 'pending').trim().toLowerCase();
+
+        final c = consults(
+          lecturer,
+          lecturerNotes,
+          location,
+          module,
+          status,
+          student,
+          studentNotes,
+          timeslot,
+          date,
+          reason,
+          code,
+        );
+
+
+
+      if (status == 'completed') {
+        completed.add(c);
+        print(completed);
+      } else if (status == 'scheduled') {
+        scheduled.add(c);
+      } else if (status == 'pending') {
+        pending.add(c);
+      } else {
+        rejected.add(c);
+      }
+      }
+
+    print('Completed: ${completed.length}');
+    print('Scheduled: ${scheduled.length}');
+    print('Pending: ${pending.length}');
+    print('Rejected: ${rejected.length}');
+  }
+
+}
+
+
+
