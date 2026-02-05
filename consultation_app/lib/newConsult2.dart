@@ -13,12 +13,18 @@ class Newconsult2 extends StatefulWidget {
 
 class _Newconsult2State extends State<Newconsult2> {
   DateTime _focusedMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  Set<String> _availableDates = {};
   DateTime? _selectedDate;
   String? _selectedTime;
   List<dynamic> _availableTimeslots = [];
   String? roleFound;
   Map<String, dynamic>? userData;
   bool isLoading = true;
+  String chosenLecturer = "";
+  String chosenModule = "";
+  String chosenMode = "";
+  String student_notes = "";
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -27,37 +33,80 @@ class _Newconsult2State extends State<Newconsult2> {
   }
 
   Future<void> _loadUserData() async {
-  final user = FirebaseAuth.instance.currentUser;
-  if (user == null) return;
-  Map<String, dynamic>? data;
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+    Map<String, dynamic>? data;
 
-  try {
-    final collections = ['students', 'lecturers'];
+    try {
+      final collections = ['students', 'lecturers'];
 
-    for (String col in collections) {
-      final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
-      if (doc.exists) {
-        data = doc.data();
-        roleFound = col;
-        break; 
+      for (String col in collections) {
+        final doc = await FirebaseFirestore.instance.collection(col).doc(user.uid).get();
+        if (doc.exists) {
+          data = doc.data();
+          roleFound = col;
+          break; 
+        }
+      }
+
+      if (data != null) {
+        setState(() {
+          userData = data;
+          userData!['role'] = roleFound; 
+          print(userData!['name']);
+          isLoading = false;
+        });
+      } else {
+        print("User document not found in any collection!");
+        setState(() => isLoading = false);
+      }
+    } catch (e) {
+      print("Error loading user data: $e");
+      setState(() => isLoading = false);
+    }
+
+    if (!mounted) return;
+
+    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+
+    setState(() {
+      chosenLecturer = args['selectedLecturer'];
+      chosenModule = args['selectedModule'];
+      chosenMode = args['selectedMode'];
+      student_notes = args['student_notes'];
+    });
+
+    if (_availableDates.isEmpty) {
+      _loadLecturerAvailability(chosenLecturer);
+    }
+    setState(() {
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _loadLecturerAvailability(String chosenLecturer) async {
+    final query = await FirebaseFirestore.instance
+        .collection('lecturers')
+        .where('name', isEqualTo: chosenLecturer)
+        .limit(1)
+        .get();
+
+    if (query.docs.isEmpty) return;
+
+    final data = query.docs.first.data();
+    final availability = data['availability'] as List;
+
+    final dates = <String>{};
+
+    for (final a in availability) {
+      if ((a['timeslots'] as List).isNotEmpty) {
+        dates.add(a['date']);
       }
     }
 
-    if (data != null) {
-      setState(() {
-        userData = data;
-        userData!['role'] = roleFound; 
-        print(userData!['name']);
-        isLoading = false;
-      });
-    } else {
-      print("User document not found in any collection!");
-      setState(() => isLoading = false);
-    }
-  } catch (e) {
-    print("Error loading user data: $e");
-    setState(() => isLoading = false);
-  }
+    setState(() {
+      _availableDates = dates;
+    });
   }
   
   
@@ -171,13 +220,8 @@ class _Newconsult2State extends State<Newconsult2> {
 
   @override
   Widget build(BuildContext context) {
-    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
 
-    String chosenLecturer = args['selectedLecturer'];
-    String chosenModule = args['selectedModule'];
-    String chosenMode = args['selectedMode'];
-    String student_notes = args['student_notes'];
-
+    if (isLoading) return const Center(child: CircularProgressIndicator());
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -213,6 +257,7 @@ class _Newconsult2State extends State<Newconsult2> {
             _CalendarCard(
               month: _focusedMonth,
               selectedDate: _selectedDate,
+              availableDates: _availableDates,
               onPrev: () {
                 setState(() {
                   _focusedMonth =
@@ -235,26 +280,20 @@ class _Newconsult2State extends State<Newconsult2> {
             Wrap(
               spacing: 16,
               runSpacing: 12,
-              children: _availableTimeslots.isEmpty
-                  ? [
-                      const Text(
-                        'No available timeslots for this date.',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    ]
-                  : _availableTimeslots
-                      .map(
-                        (slot) => _TimeSlotButton(
-                          label: slot,
-                          selected: _selectedTime == slot,
-                          onTap: () {
-                            setState(() {
-                              _selectedTime = slot;
-                            });
-                          },
-                        ),
-                      )
-                      .toList(),
+              children: 
+                _availableTimeslots
+                  .map(
+                    (slot) => _TimeSlotButton(
+                      label: slot,
+                      selected: _selectedTime == slot,
+                      onTap: () {
+                        setState(() {
+                          _selectedTime = slot;
+                        });
+                      },
+                    ),
+                  )
+                  .toList(),
             ),
             const SizedBox(height: 24),
             Center(
@@ -302,6 +341,7 @@ class _CalendarCard extends StatelessWidget {
     required this.onPrev,
     required this.onNext,
     required this.onSelectDate,
+    required this.availableDates,
   });
 
   final DateTime month;
@@ -309,6 +349,7 @@ class _CalendarCard extends StatelessWidget {
   final VoidCallback onPrev;
   final VoidCallback onNext;
   final ValueChanged<DateTime> onSelectDate;
+  final Set<String> availableDates;
 
   @override
   Widget build(BuildContext context) {
@@ -377,34 +418,31 @@ class _CalendarCard extends StatelessWidget {
             spacing: 0,
             runSpacing: 4,
             children: [
-
               for (int i = 0; i < leadingEmpty; i++) const _DayCell.empty(),
 
               for (int day = 1; day <= daysInMonth; day++)
-                _DayCell(
-                  day: day,
-                  selected: _isSameDay(
-                    selectedDate,
-                    DateTime(month.year, month.month, day),
-                  ),
-
-                  onTap: DateTime(month.year, month.month, day)
-                          .isBefore(DateTime(
-                        tomorrow.year,
-                        tomorrow.month,
-                        tomorrow.day,
-                      ))
-                      ? null
-                      : () => onSelectDate(
-                            DateTime(month.year, month.month, day),
-                          ),
-                ),
+                _buildDayCell(day, tomorrow),
 
               for (int i = 0; i < trailingEmpty; i++) const _DayCell.empty(),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildDayCell(int day, DateTime tomorrow) {
+    final dateObj = DateTime(month.year, month.month, day);
+    final dateKey = dateObj.toIso8601String().split('T')[0];
+
+    final selectable =
+        !dateObj.isBefore(DateTime(tomorrow.year, tomorrow.month, tomorrow.day)) &&
+        availableDates.contains(dateKey);
+
+    return _DayCell(
+      day: day,
+      selected: _isSameDay(selectedDate, dateObj),
+      onTap: selectable ? () => onSelectDate(dateObj) : null,
     );
   }
 
