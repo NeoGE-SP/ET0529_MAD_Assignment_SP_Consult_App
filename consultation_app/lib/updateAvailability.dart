@@ -162,7 +162,7 @@ class _UpdateAvailabilityPageState extends State<UpdateAvailabilityPage> {
                 } else if (_removedSelections.contains(slot)) {
                   bgColor = Colors.red;
                 } else if (_newSelections.contains(slot)) {
-                  bgColor = const Color.fromARGB(255, 132, 119, 0);
+                  bgColor = const Color.fromARGB(255, 255, 184, 51);
                 } else {
                   bgColor = Colors.white;
                 }
@@ -178,7 +178,7 @@ class _UpdateAvailabilityPageState extends State<UpdateAvailabilityPage> {
             ElevatedButton(
               style: FilledButton.styleFrom(backgroundColor: Colors.red),
               onPressed: _confirmChanges,
-              child: const Text("Confirm Changes", style: TextStyle(color: Colors.black),),
+              child: const Text("Confirm Changes", style: TextStyle(color: Colors.white),),
             ),
           ],
         ),

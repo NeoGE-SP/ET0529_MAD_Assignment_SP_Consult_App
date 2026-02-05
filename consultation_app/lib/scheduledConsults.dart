@@ -238,7 +238,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
     IconData icon;
 
     if (consult.status == 'scheduled') {
-      bgColor = const Color.fromARGB(255, 173, 170, 99);
+      bgColor = const Color.fromARGB(255, 255, 250, 113);
       icon = Icons.calendar_month;
     } else if (consult.status == 'rejected') {
       bgColor = const Color.fromARGB(255, 255, 146, 146);

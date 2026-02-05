@@ -123,7 +123,7 @@ class _NotesPageState extends State<NotesPage> {
                   Navigator.pushNamed(context, '/aisummary', arguments: {'l_notes': l_notes.trim(), 's_notes': s_notes.trim()});
                 }, 
                 style: ButtonStyle(
-                  backgroundColor: MaterialStatePropertyAll(Colors.red),
+                  backgroundColor: MaterialStatePropertyAll(Colors.blue),
                 ),
                 child: Text(
                   "Get AI Summary",
@@ -136,7 +136,7 @@ class _NotesPageState extends State<NotesPage> {
                   await _saveNotes(consultCode: code, role: role);
                 }, 
                 style: ButtonStyle(
-                  backgroundColor: MaterialStatePropertyAll(Colors.red),
+                  backgroundColor: MaterialStatePropertyAll(Colors.blue),
                 ),
                 child: Text(
                   "Save",
@@ -202,7 +202,7 @@ class _NotesPageState extends State<NotesPage> {
                   await _saveNotes(consultCode: code, role: role);
                 }, 
                 style: ButtonStyle(
-                  backgroundColor: MaterialStatePropertyAll(Colors.red),
+                  backgroundColor: MaterialStatePropertyAll(Colors.blue),
                 ),
                 child: Text(
                   "Save",
