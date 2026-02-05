@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mad_assignment_sp_consult_booking/data.dart';
+import 'package:mad_assignment_sp_consult_booking/notes.dart';
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -151,7 +152,11 @@ class _HistoryPageState extends State<HistoryPage> {
                           style: FilledButton.styleFrom(
                               backgroundColor: Colors.white),
                           onPressed: () {
-                            // TODO: Show consultation notes
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const ConsultationNotesPage(),
+                              ),
+                            );
                           },
                           child: const Text(
                             'Consultation Notes',
