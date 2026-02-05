@@ -304,6 +304,7 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               FilledButton(
+                                style: FilledButton.styleFrom(backgroundColor: Colors.white),
                                 onPressed: () {
                                   showDialog(
                                     context: context,
@@ -341,10 +342,11 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                     },
                                   );
                                 },
-                                child: const Text('Accept', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                child: const Text('Accept', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                               ),
                               const SizedBox(width: 100),
                               FilledButton(
+                                style: FilledButton.styleFrom(backgroundColor: Colors.white),
                                 onPressed: () {
                                   showDialog(
                                     context: context,
@@ -376,7 +378,7 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                                     },
                                   );
                                 },
-                                child: const Text('Reject', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                child: const Text('Reject', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                               )
                             ],
                           )
@@ -385,13 +387,15 @@ class _ConfirmLectureState extends State<ConfirmLecture> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               FilledButton(
+                                style: FilledButton.styleFrom(backgroundColor: Colors.white),
                                 onPressed: () { Navigator.pushReplacementNamed(context, '/newNotes', arguments: {'role': 'lecturers', 'c_code': consult.code, 'name': consult.lecturer, 'notes': consult.lectureNotes}); },
-                                child: const Text('Consultation Notes', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                child: const Text('Consultation Notes', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                               ),
                               const SizedBox(width: 40),
                               FilledButton(
+                                style: FilledButton.styleFrom(backgroundColor: Colors.white),
                                 onPressed: () async { await completeConsult(consult.code); Navigator.pushReplacementNamed(context, '/reload'); },
-                                child: const Text('Complete', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                                child: const Text('Complete', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                               )
                             ],
                           )

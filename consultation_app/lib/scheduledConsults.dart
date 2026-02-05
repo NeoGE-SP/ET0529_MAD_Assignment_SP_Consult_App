@@ -238,7 +238,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
     IconData icon;
 
     if (consult.status == 'scheduled') {
-      bgColor = const Color.fromARGB(255, 255, 251, 146);
+      bgColor = const Color.fromARGB(255, 255, 250, 113);
       icon = Icons.calendar_month;
     } else if (consult.status == 'rejected') {
       bgColor = const Color.fromARGB(255, 255, 146, 146);
@@ -322,6 +322,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
       return Row(
         children: [
           FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.white),
             onPressed: () {
               Navigator.pushReplacementNamed(context, '/newNotes', arguments: {
                 'role': 'students',
@@ -330,15 +331,16 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
                 'notes': consult.studentNotes
               });
             },
-            child: const Text('Consultation Notes'),
+            child: const Text('Consultation Notes', style: TextStyle(color: Colors.black),),
           ),
           const SizedBox(width: 20),
           FilledButton(
+            style: FilledButton.styleFrom(backgroundColor: Colors.white),
             onPressed: () {
               markCalendar(consult.location, consult.timeslot, consult.mod,
                   consult.student, consult.date, consult.lecturer);
             },
-            child: const Text('Add to Calendar'),
+            child: const Text('Add to Calendar', style: TextStyle(color: Colors.black)),
           ),
         ],
       );
@@ -348,11 +350,13 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: Colors.white),
           onPressed: () => cancelConsult(consult.code),
-          child: const Text('Cancel'),
+          child: const Text('Cancel', style: TextStyle(color: Colors.black),),
         ),
         const SizedBox(width: 100),
         FilledButton(
+          style: FilledButton.styleFrom(backgroundColor: Colors.white),
           onPressed: () async {
             await getId(consult.code);
             Navigator.pushReplacementNamed(context, '/reschedConsult', arguments: {
@@ -361,7 +365,7 @@ class _ConfirmStudentState extends State<ConfirmStudent> {
               'module': consult.mod
             });
           },
-          child: const Text('Reschedule'),
+          child: const Text('Reschedule', style: TextStyle(color: Colors.black),),
         ),
       ],
     );

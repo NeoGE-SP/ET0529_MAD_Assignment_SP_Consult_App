@@ -99,8 +99,11 @@ class _HomePageState extends State<HomePage> {
                     
                   ),
 
-                  Text('Book a new consultation', style: TextStyle(fontSize:30, fontWeight: FontWeight.bold)),
-                  
+                  Padding(
+                    padding: EdgeInsetsGeometry.all(15),
+                    child: Text('Book a new consultation', 
+                    style: TextStyle(fontSize:30, fontWeight: FontWeight.bold))),
+
                   ]
                 ),
               
@@ -129,8 +132,13 @@ class _HomePageState extends State<HomePage> {
                     
                   ),
 
-                  Text('View scheduled / pending consultations', style: TextStyle(fontSize:30, fontWeight: FontWeight.bold)),
-                  
+                  Padding(
+                    padding: EdgeInsetsGeometry.all(15),
+                    child: Text('View scheduled/pending consults', 
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize:30, fontWeight: FontWeight.bold, ))),
+
+
                   ]
                 ),
               

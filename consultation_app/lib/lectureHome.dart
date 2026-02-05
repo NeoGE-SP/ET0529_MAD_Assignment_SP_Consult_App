@@ -97,7 +97,11 @@ class _LectureHomeState extends State<LectureHome> {
                     
                   ),
 
-                  Text('Review Consultation Requests', style: TextStyle(fontSize:30, fontWeight: FontWeight.bold)),
+                  Padding(
+                    padding: EdgeInsetsGeometry.all(15),
+                    child: Text('Review Consultation Requests', 
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize:30, fontWeight: FontWeight.bold))),
                   
                   ]
                 ),

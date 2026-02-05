@@ -11,7 +11,7 @@ Future<String> getOpenRouterResponse(String userInput) async {
   const endpoint = 'https://openrouter.ai/api/v1/chat/completions';
 
   final headers = {
-    'Authorization': 'Bearer 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',
+    'Authorization': 'Bearer ',
     'Content-Type': 'application/json',
   };
 
@@ -162,6 +162,7 @@ class NoteSummarizerState extends State<NoteSummarizer> {
               const SizedBox(height: 6,),
               if (_summary1.isNotEmpty)
                 Container(
+                  color: const Color(0xFFFFF1DC),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
@@ -177,6 +178,7 @@ class NoteSummarizerState extends State<NoteSummarizer> {
                 const SizedBox(height: 6,),
                 if (_summary2.isNotEmpty)
                 Container(
+                  color: const Color.fromARGB(255, 255, 202, 122),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.grey[200],
