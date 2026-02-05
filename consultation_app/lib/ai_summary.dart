@@ -162,10 +162,9 @@ class NoteSummarizerState extends State<NoteSummarizer> {
               const SizedBox(height: 6,),
               if (_summary1.isNotEmpty)
                 Container(
-                  color: const Color(0xFFFFF1DC),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: const Color(0xFFFFF1DC),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -178,10 +177,9 @@ class NoteSummarizerState extends State<NoteSummarizer> {
                 const SizedBox(height: 6,),
                 if (_summary2.isNotEmpty)
                 Container(
-                  color: const Color.fromARGB(255, 255, 202, 122),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: const Color.fromARGB(255, 255, 202, 122),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
